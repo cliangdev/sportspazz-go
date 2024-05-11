@@ -1,0 +1,28 @@
+# Ignore binary files
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Ignore go build artifacts
+*.test
+*.out
+
+# Ignore VS Code settings
+.vscode/
+
+# Ignore generated files
+bin/
+pkg/
+.air
+.air.pid
+tmp/
+
+
+# Ignore editor-specific files
+*.swp
+*~
+.DS_Store
+
+# Ignore other files
+.env

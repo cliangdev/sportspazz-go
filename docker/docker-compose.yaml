@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  sportspazz_db:
+    image: mysql:8.0
+    cap_add:
+      - SYS_NICE
+    restart: always
+    environment:
+      - MYSQL_DATABASE=sports_app
+      - MYSQL_USER=sportspazz
+      - MYSQL_PASSWORD=test
+      - MYSQL_ROOT_PASSWORD=test
+    ports:
+      - '3309:3306'
+    volumes:
+      - sportspazz_db:/var/lib/mysql
+
+volumes:
+  sportspazz_db:
+    driver: local
