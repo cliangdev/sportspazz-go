@@ -14,9 +14,14 @@ const traceIDKey = "trace.id"
 
 func LoggerMiddleWare(logger *slog.Logger) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
+		traceId := uuid.New().String()
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			func() {
-				logger = logger.With(traceIDKey, uuid.New().String())
+				logger = logger.With(traceIDKey, traceId)
+
+				logger.Info("Incoming request",
+					slog.String("method", r.Method),
+					slog.String("path", r.URL.Path))
 
 				ctx := context.WithValue(r.Context(), "logger", logger)
 				r = r.WithContext(ctx)
