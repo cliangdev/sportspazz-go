@@ -12,6 +12,7 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/mysql"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"github.com/sportspazz/api/client"
 	"github.com/sportspazz/cmd/server"
 	"github.com/sportspazz/configs"
 	"google.golang.org/api/option"
@@ -55,12 +56,13 @@ func main() {
 		logger.Error("error initializing firebase app", slog.Any("err", err))
 		os.Exit(1)
 	}
+	firebaseRest := client.NewFirebaseClient(configs.Envs.FirebaseApiKey)
 
 	killSig := make(chan os.Signal, 1)
 	signal.Notify(killSig, os.Interrupt, syscall.SIGTERM)
 
 	go func() {
-		server := server.NewServer(configs.Envs.Host, configs.Envs.Port, db, firebaseApp)
+		server := server.NewServer(configs.Envs.Host, configs.Envs.Port, db, firebaseApp, firebaseRest)
 		if err := server.Run(); err != nil {
 			logger.Error("Cannot start server", slog.Any("err", err))
 		}

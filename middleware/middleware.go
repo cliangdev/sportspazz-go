@@ -6,6 +6,9 @@ import (
 	"log/slog"
 	"net/http"
 	"strings"
+	"time"
+
+	"firebase.google.com/go/v4/auth"
 )
 
 type contextKey string
@@ -46,4 +49,48 @@ func ContentTypeHeaderMiddleWare(next http.Handler) http.Handler {
 		}
 		next.ServeHTTP(w, r)
 	})
+}
+
+func AuthenticateMiddleWare(firebaseClient *auth.Client, logger *slog.Logger) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if idTokenCookie, _ := r.Cookie("idToken"); cookie != nil {
+				idToken := idTokenCookie.Value
+				token, err := firebaseClient.VerifyIDToken(context.Background(), idToken)
+
+				if err != nil {
+					refreshToken(firebaseClient, w, r, logger)
+				} else {
+					email := token.Claims["email"].(string)
+					ctx := context.WithValue(r.Context(), "email", email)
+
+					logger.Debug("authenticated user", slog.Any("email", email))
+					next.ServeHTTP(w, r.WithContext(ctx))
+				}
+			} else {
+				next.ServeHTTP(w, r)
+			}
+		})
+	}
+}
+
+func refreshToken(firebaseClient *auth.Client, w http.ResponseWriter, r *http.Request, logger *slog.Logger) {
+	if refreshTokenCookie, err := r.Cookie("refreshToken"); err == nil {
+		refreshToken := refreshTokenCookie.Value
+		token, err := firebaseClient.VerifyIDTokenAndCheckRevoked(context.Background(), refreshToken)
+
+		if err == nil {
+			logger.Error("refresh error", slog.Any("err", err))
+			tokenJSON, _ := json.Marshal(token)
+			http.SetCookie(w, &http.Cookie{
+				Name:     "idToken",
+				Value:    string(tokenJSON),
+				Path:     "/",
+				Expires:  time.Unix(token.Claims["exp"].(int64), 0),
+				HttpOnly: true,
+				Secure:   true,
+				SameSite: http.SameSiteStrictMode,
+			})
+		}
+	}
 }
