@@ -11,9 +11,11 @@ import (
 	"firebase.google.com/go/v4/auth"
 )
 
-type contextKey string
-
-const loggerKey contextKey = "logger"
+const (
+	loggerKey       = "logger"
+	idTokenKey      = "idToken"
+	refreshTokenKey = "refreshToken"
+)
 
 type responseWriter struct {
 	http.ResponseWriter
@@ -54,7 +56,8 @@ func ContentTypeHeaderMiddleWare(next http.Handler) http.Handler {
 func AuthenticateMiddleWare(firebaseClient *auth.Client, logger *slog.Logger) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if idTokenCookie, _ := r.Cookie("idToken"); cookie != nil {
+			ctx := r.Context()
+			if idTokenCookie, _ := r.Cookie(idTokenKey); idTokenCookie != nil {
 				idToken := idTokenCookie.Value
 				token, err := firebaseClient.VerifyIDToken(context.Background(), idToken)
 
@@ -62,14 +65,15 @@ func AuthenticateMiddleWare(firebaseClient *auth.Client, logger *slog.Logger) fu
 					refreshToken(firebaseClient, w, r, logger)
 				} else {
 					email := token.Claims["email"].(string)
-					ctx := context.WithValue(r.Context(), "email", email)
-
-					logger.Debug("authenticated user", slog.Any("email", email))
-					next.ServeHTTP(w, r.WithContext(ctx))
+					ctx = context.WithValue(ctx, "email", email)
+					ctx = context.WithValue(ctx, "name", email)
+					ctx = context.WithValue(ctx, "logined", true)
 				}
 			} else {
-				next.ServeHTTP(w, r)
+				ctx = context.WithValue(ctx, "name", "")
+				ctx = context.WithValue(ctx, "logined", false)
 			}
+			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
 }
@@ -79,11 +83,13 @@ func refreshToken(firebaseClient *auth.Client, w http.ResponseWriter, r *http.Re
 		refreshToken := refreshTokenCookie.Value
 		token, err := firebaseClient.VerifyIDTokenAndCheckRevoked(context.Background(), refreshToken)
 
+		logger.Info("refreshing token", slog.Any("err", err))
+
 		if err == nil {
 			logger.Error("refresh error", slog.Any("err", err))
 			tokenJSON, _ := json.Marshal(token)
 			http.SetCookie(w, &http.Cookie{
-				Name:     "idToken",
+				Name:     idTokenKey,
 				Value:    string(tokenJSON),
 				Path:     "/",
 				Expires:  time.Unix(token.Claims["exp"].(int64), 0),
@@ -91,6 +97,29 @@ func refreshToken(firebaseClient *auth.Client, w http.ResponseWriter, r *http.Re
 				Secure:   true,
 				SameSite: http.SameSiteStrictMode,
 			})
+		} else {
+			http.SetCookie(w, &http.Cookie{
+				Name:     idTokenKey,
+				Value:    "",
+				Path:     "/",
+				Expires:  time.Unix(0, 0),
+				MaxAge:   -1,
+				HttpOnly: true,
+				Secure:   true,
+				SameSite: http.SameSiteStrictMode,
+			})
+			http.SetCookie(w, &http.Cookie{
+				Name:     refreshTokenKey,
+				Value:    "",
+				Path:     "/",
+				Expires:  time.Unix(0, 0),
+				MaxAge:   -1,
+				HttpOnly: true,
+				Secure:   true,
+				SameSite: http.SameSiteStrictMode,
+			})
+			w.Header().Set("HX-Redirect", "/")
+			w.WriteHeader(http.StatusOK)
 		}
 	}
 }

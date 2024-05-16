@@ -3,6 +3,7 @@ package templates
 templ Layout(content templ.Component, title string) {
     @header(title)
     <body class="flex flex-col h-ful">
+        @nav()
         <main class="flex-1 container">
             @content
         </main>
@@ -17,6 +18,44 @@ templ header(title string) {
 		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
         <script src="https://unpkg.com/htmx.org@1.9.12" integrity="sha384-ujb1lZYygJmzgSwoxRggbCHcjc0rB2XoQrxeTUQyRjrOnlCoYta87iKBWq3EsdM2" crossorigin="anonymous"></script>
     </head>
+}
+
+func isLogined(ctx context.Context) bool{
+    logined := ctx.Value("logined")
+    return logined != nil && logined == true
+}
+
+func userName(ctx context.Context) string {
+    return ctx.Value("name").(string)
+}
+
+templ nav() {
+    <nav>
+        <div class="container flex justify-between">
+            <ol>
+                <li>
+                    <a href="/">Home</a>
+                </li>
+            </ol>
+            if isLogined(ctx) {
+                <ol>
+                    <p>Welcom { userName(ctx) }!</p> 
+                    <button type="submit" hx-post="/logout" hx-trigger="click">
+                        Logout
+                    </button>
+                </ol>
+            } else {
+                <ol>
+                    <li>
+                        <a href="/login">Login</a>
+                    </li>
+                    <li>
+                        <a href="/register">Register</a>
+                    </li>
+                </ol>
+            }
+        </div>
+    </nav>
 }
 
 templ footer() {
