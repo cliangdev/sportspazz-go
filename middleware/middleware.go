@@ -6,26 +6,25 @@ import (
 	"log/slog"
 	"net/http"
 	"strings"
-
-	"github.com/google/uuid"
 )
 
-const traceIDKey = "trace.id"
+type contextKey string
+
+const loggerKey contextKey = "logger"
+
+type responseWriter struct {
+	http.ResponseWriter
+	statusCode int
+}
 
 func LoggerMiddleWare(logger *slog.Logger) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
-		traceId := uuid.New().String()
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			func() {
-				logger = logger.With(traceIDKey, traceId)
+			logger.Info("Incoming request", slog.String("method", r.Method), slog.String("path", r.URL.Path))
 
-				logger.Info("Incoming request",
-					slog.String("method", r.Method),
-					slog.String("path", r.URL.Path))
+			ctx := context.WithValue(r.Context(), loggerKey, logger)
+			r = r.WithContext(ctx)
 
-				ctx := context.WithValue(r.Context(), "logger", logger)
-				r = r.WithContext(ctx)
-			}()
 			next.ServeHTTP(w, r)
 		})
 	}
