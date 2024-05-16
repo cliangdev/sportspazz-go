@@ -3,5 +3,25 @@ package templates
 templ LoginPage() {
     <div>
         <h2>Login</h2>
+        <form hx-post="/login" hx-trigger="submit" hx-target="#login-response" hx-swap="innerHTML">
+            <div>
+                <input id="email" name="email" type="email" placeholder="Email" required=""></input>
+            </div>
+            <div>
+                <input id="password" name="password" type="password" placeholder="Password" required=""></input>
+            </div>
+            <button type="submit">Login</button>
+            <div id="login-response"></div>
+            <p>
+                Create a new account <a href="/register">Register</a>
+            </p>
+        </form>
     </div>
+}
+
+
+templ LoginError(message string) {
+    if message != "" {
+        <div><span style="color: red;" >{ message}</span></div>
+    }
 }

@@ -15,6 +15,7 @@ type Config struct {
 	DBName                     string
 	DBMigrationDir             string
 	FirebaseServiceAccountJson string
+	FirebaseApiKey             string
 }
 
 var Envs = initConfig()
@@ -31,6 +32,7 @@ func initConfig() Config {
 		DBName:                     getEnv("DB_NAME", "sports_app"),
 		DBMigrationDir:             getEnv("DB_MIGRATION_DIR", "/db/migrations"),
 		FirebaseServiceAccountJson: getEnv("FIREBASE_SERVICE_ACCOUNT_JSON", "firebase-service-account.json"),
+		FirebaseApiKey:             getEnv("FIREBASE_API_KEY", "apiKey"),
 	}
 }
 

@@ -13,22 +13,25 @@ import (
 	web "github.com/sportspazz/api/web"
 	"github.com/sportspazz/middleware"
 	"github.com/sportspazz/service/user"
+	"github.com/sportspazz/api/client"
 	"gorm.io/gorm"
 )
 
 type Server struct {
-	host        string
-	port        string
-	db          *gorm.DB
-	firebaseApp *firebase.App
+	host         string
+	port         string
+	db           *gorm.DB
+	firebaseApp  *firebase.App
+	firebaseRest *client.FirebaseClient
 }
 
-func NewServer(host, port string, db *gorm.DB, firebaseApp *firebase.App) *Server {
+func NewServer(host, port string, db *gorm.DB, firebaseApp *firebase.App, firebaseRest *client.FirebaseClient) *Server {
 	return &Server{
-		host:        host,
-		port:        port,
-		db:          db,
-		firebaseApp: firebaseApp,
+		host:         host,
+		port:         port,
+		db:           db,
+		firebaseApp:  firebaseApp,
+		firebaseRest: firebaseRest,
 	}
 }
 
@@ -39,19 +42,20 @@ func (s *Server) Run() error {
 	subRouter := router.PathPrefix("/api/v1").Subrouter()
 
 	// middlewares
+	firebaseAdminClient, err := s.firebaseApp.Auth(context.Background())
+	if err != nil {
+		logger.Error("Cannot initialize Firebase admin client", slog.Any("err", err))
+		os.Exit(1)
+	}
 	router.Use(
 		middleware.LoggerMiddleWare(logger),
 		middleware.ContentTypeHeaderMiddleWare,
+		middleware.AuthenticateMiddleWare(firebaseAdminClient, logger),
 	)
-	// REST API handler
-	firebaseClient, err := s.firebaseApp.Auth(context.Background())
-	if err != nil {
-		logger.Error("Cannot ping database", slog.Any("err", err))
-		os.Exit(1)
-	}
 
+	// REST API handler
 	store := user.NewUserStoe(s.db, logger)
-	userService := user.NewUserService(store, firebaseClient, logger)
+	userService := user.NewUserService(store, firebaseAdminClient, logger)
 	userHandler := rest_api.NewUserHandler(userService)
 	userHandler.RegisterRoutes(subRouter)
 
@@ -59,7 +63,7 @@ func (s *Server) Run() error {
 	registerHandler := web.NewRegisterHandler(userService, logger)
 	registerHandler.RegisterRoutes(router)
 
-	loginHandler := web.NewLoginHandler(userService, logger)
+	loginHandler := web.NewLoginHandler(userService, firebaseAdminClient, s.firebaseRest, logger)
 	loginHandler.RegisterRoutes(router)
 
 	router.PathPrefix("/").Handler(http.FileServer(http.Dir("public")))
