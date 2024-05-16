@@ -1,5 +1,14 @@
+.PHONY: templ-generate
+templ-generate:
+	templ generate
+
+.PHONY: templ-watch
+templ-watch:
+	templ generate --watch
+
 .PHONY: build
 build:
+	@templ generate api/web
 	@go build -o bin/sportspazz cmd/main.go
 
 .PHONY: run
@@ -14,4 +23,6 @@ clean:
 	rm -rf vendor/
 	rm -f .air .air.pid
 	rm -rf tmp/
+	rm -f api/web/templates/*_templ.go
+	rm -f api/web/templates/*_templ.txt
 	@echo "Cleanup complete"

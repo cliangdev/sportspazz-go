@@ -1,0 +1,29 @@
+package templates
+
+templ RegisterPage() {
+    <div>
+        <h2>Create a New Account</h2>
+        <form hx-post="/register" hx-trigger="submit" hx-target="#register-response">
+            <div id="register-error"></div>
+            <div>
+                <input id="email" name="email" type="email" placeholder="email" required=""></input>
+            </div>
+            <div>
+                <input id="password" name="password" type="password"  placeholder="••••••••" required=""></input>
+            </div>
+            
+            <button type="submit">Sign Up</button>
+            <div id="register-response"></div>
+            <p>
+                Already have an account?
+                <a href="/login">Login</a>
+            </p>
+        </form>
+    </div>
+}
+
+templ RegisterError(message string) {
+    if message != "" {
+        <div><span style="color: red;" >{ message}</span></div>
+    }
+}

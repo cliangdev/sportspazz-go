@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 
@@ -35,8 +36,8 @@ func (u *UserService) RegisterUser(email, password string) (*User, error) {
 	newUser, err := u.firebaseClient.CreateUser(context.Background(), params)
 
 	if err != nil {
-		u.logger.Error("Unable to create user", slog.Any("err", err))
-		return nil, err
+		u.logger.Error("Unable to create user in Firebase", slog.Any("err", err))
+		return nil, errors.New("unable to register due to internal error")
 	}
 	u.logger.Info("New user created in Firebase", slog.Any("user", newUser))
 

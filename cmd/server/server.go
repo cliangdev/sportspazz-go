@@ -10,6 +10,7 @@ import (
 	firebase "firebase.google.com/go/v4"
 	"github.com/gorilla/mux"
 	rest_api "github.com/sportspazz/api/rest"
+	web "github.com/sportspazz/api/web"
 	"github.com/sportspazz/middleware"
 	"github.com/sportspazz/service/user"
 	"gorm.io/gorm"
@@ -40,8 +41,8 @@ func (s *Server) Run() error {
 	// middlewares
 	router.Use(
 		middleware.LoggerMiddleWare(logger),
-		middleware.ContentTypeHeaderMiddleWare)
-
+		middleware.ContentTypeHeaderMiddleWare,
+	)
 	// REST API handler
 	firebaseClient, err := s.firebaseApp.Auth(context.Background())
 	if err != nil {
@@ -53,6 +54,13 @@ func (s *Server) Run() error {
 	userService := user.NewUserService(store, firebaseClient, logger)
 	userHandler := rest_api.NewUserHandler(userService)
 	userHandler.RegisterRoutes(subRouter)
+
+	// Templ HTMX handler
+	registerHandler := web.NewRegisterHandler(userService, logger)
+	registerHandler.RegisterRoutes(router)
+
+	loginHandler := web.NewLoginHandler(userService, logger)
+	loginHandler.RegisterRoutes(router)
 
 	router.PathPrefix("/").Handler(http.FileServer(http.Dir("public")))
 

@@ -17,6 +17,8 @@ pkg/
 .air
 .air.pid
 tmp/
+api/web/templates/*_templ.go
+api/web/templates/*_templ.txt
 
 
 # Ignore editor-specific files
