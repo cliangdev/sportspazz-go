@@ -9,11 +9,11 @@ import (
 
 	firebase "firebase.google.com/go/v4"
 	"github.com/gorilla/mux"
+	"github.com/sportspazz/api/client"
 	rest_api "github.com/sportspazz/api/rest"
 	web "github.com/sportspazz/api/web"
 	"github.com/sportspazz/middleware"
 	"github.com/sportspazz/service/user"
-	"github.com/sportspazz/api/client"
 	"gorm.io/gorm"
 )
 
@@ -60,6 +60,9 @@ func (s *Server) Run() error {
 	userHandler.RegisterRoutes(subRouter)
 
 	// Templ HTMX handler
+	homeHandler := web.NewHomeHandler(logger)
+	homeHandler.RegisterRoutes(router)
+
 	registerHandler := web.NewRegisterHandler(userService, logger)
 	registerHandler.RegisterRoutes(router)
 

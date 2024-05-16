@@ -12,6 +12,11 @@ import (
 	"github.com/sportspazz/service/user"
 )
 
+const (
+	idTokenKey      = "idToken"
+	refreshTokenKey = "refreshToken"
+)
+
 type LoginHandler struct {
 	userService         *user.UserService
 	firebaseAdminClient *auth.Client
@@ -31,6 +36,7 @@ func NewLoginHandler(userService *user.UserService, firebaseAdminClient *auth.Cl
 func (h *LoginHandler) RegisterRoutes(router *mux.Router) {
 	router.HandleFunc("/login", h.serveLoginPageHTML).Methods(http.MethodGet)
 	router.HandleFunc("/login", h.loginHTML).Methods(http.MethodPost)
+	router.HandleFunc("/logout", h.logoutHTML).Methods(http.MethodPost)
 }
 
 func (h *LoginHandler) serveLoginPageHTML(w http.ResponseWriter, r *http.Request) {
@@ -61,7 +67,7 @@ func (h *LoginHandler) loginHTML(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.SetCookie(w, &http.Cookie{
-		Name:     "idToken",
+		Name:     idTokenKey,
 		Value:    resp.IdToken,
 		Path:     "/",
 		HttpOnly: true,
@@ -69,5 +75,44 @@ func (h *LoginHandler) loginHTML(w http.ResponseWriter, r *http.Request) {
 		Expires:  time.Now().Add(24 * time.Hour),
 	})
 
+	http.SetCookie(w, &http.Cookie{
+		Name:     refreshTokenKey,
+		Value:    resp.RefreshToken,
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   true,
+		Expires:  time.Now().Add(24 * time.Hour),
+	})
+
 	w.Header().Set("HX-Redirect", "/")
+}
+
+func (h *LoginHandler) logoutHTML(w http.ResponseWriter, r *http.Request) {
+	clearTokenCookies(w)
+
+	w.Header().Set("HX-Redirect", "/")
+}
+
+func clearTokenCookies(w http.ResponseWriter) {
+	http.SetCookie(w, &http.Cookie{
+		Name:     idTokenKey,
+		Value:    "",
+		Path:     "/",
+		Expires:  time.Unix(0, 0),
+		MaxAge:   -1,
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteStrictMode,
+	})
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     refreshTokenKey,
+		Value:    "",
+		Path:     "/",
+		Expires:  time.Unix(0, 0),
+		MaxAge:   -1,
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteStrictMode,
+	})
 }
