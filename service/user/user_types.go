@@ -2,8 +2,6 @@ package user
 
 import (
 	"time"
-
-	"github.com/google/uuid"
 )
 
 type User struct {
@@ -14,9 +12,9 @@ type User struct {
 	Email      string
 }
 
-func NewUser(email string) *User {
+func NewUser(id, email string) *User {
 	return &User{
-		ID:        uuid.New().String(),
+		ID:        id,
 		Email:     email,
 		CreatedOn: time.Now().UTC(),
 		UpdatedOn: time.Now().UTC(),

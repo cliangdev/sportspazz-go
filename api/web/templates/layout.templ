@@ -24,12 +24,12 @@ templ header(title string) {
 }
 
 func isLogined(ctx context.Context) bool{
-    logined := ctx.Value(utils.Logined)
+    logined := ctx.Value(utils.LoginedKey)
     return logined != nil && logined == true
 }
 
 func userName(ctx context.Context) string {
-    return ctx.Value(utils.Name).(string)
+    return ctx.Value(utils.NameKey).(string)
 }
 
 templ nav() {

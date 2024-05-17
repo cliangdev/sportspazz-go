@@ -11,7 +11,7 @@ type UserStore struct {
 	logger *slog.Logger
 }
 
-func NewUserStoe(db *gorm.DB, logger *slog.Logger) *UserStore {
+func NewUserStore(db *gorm.DB, logger *slog.Logger) *UserStore {
 	return &UserStore{
 		db:     db,
 		logger: logger,
@@ -26,8 +26,8 @@ func (s *UserStore) GetUserByEmail(email string) *User {
 	return &user
 }
 
-func (s *UserStore) CreateUser(email string) *User {
-	user := NewUser(email)
+func (s *UserStore) CreateUser(id, email string) *User {
+	user := NewUser(id, email)
 
 	if err := s.db.Create(user).Error; err != nil {
 		s.logger.Error("not able to create a new user", slog.Any("err", err))

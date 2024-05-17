@@ -3,7 +3,10 @@ package rest_api
 import (
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net/http"
+
+	"github.com/sportspazz/utils"
 )
 
 const (
@@ -47,4 +50,8 @@ func ErrorJsonResponse(w http.ResponseWriter, message string) {
 	w.Header().Set(contentTypeHeader, contentTypeJson)
 	w.WriteHeader(http.StatusBadRequest)
 	json.NewEncoder(w).Encode(apiError)
+}
+
+func GetLogger(r *http.Request) *slog.Logger {
+	return r.Context().Value(utils.LoggerKey).(*slog.Logger)
 }
