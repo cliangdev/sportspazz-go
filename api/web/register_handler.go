@@ -53,7 +53,7 @@ func (h *RegisterHandler) submitRegisterHTML(w http.ResponseWriter, r *http.Requ
 	}
 
 	if len(password) < passwordMinLength {
-		templates.RegisterError(fmt.Sprintf("Password has to be at least %d characters", passwordMinLength)).Render(r.Context(), w)
+		templates.RegisterError(fmt.Sprintf("Password at least %d characters", passwordMinLength)).Render(r.Context(), w)
 		return
 	}
 

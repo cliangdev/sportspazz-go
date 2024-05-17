@@ -1,26 +1,31 @@
 package templates
 
 templ LoginPage() {
-    <div>
-        <h2>Login</h2>
-        <form hx-post="/login" hx-trigger="submit" hx-target="#login-response" hx-swap="innerHTML">
+    <div class="max-w-md w-full px-6 py-8 bg-white rounded-lg shadow-lg">
+        <h2 class="text-2xl font-semibold text-center mb-6">Login</h2>
+        <form hx-post="/login" hx-trigger="submit" hx-target="#login-response" hx-swap="innerHTML" class="space-y-4" >
             <div>
-                <input id="email" name="email" type="email" placeholder="Email" required=""></input>
+                <input id="email" name="email" type="email" placeholder="Email" required
+                    class="w-full border rounded-md px-4 py-2 focus:outline-none focus:border-blue-500"/>
             </div>
             <div>
-                <input id="password" name="password" type="password" placeholder="Password" required=""></input>
+                <input id="password" name="password" type="password" placeholder="Password" required
+                    class="w-full border rounded-md px-4 py-2 focus:outline-none focus:border-blue-500"/>
             </div>
-            <button type="submit">Login</button>
-            <div id="login-response"></div>
-            <p>
-                Create a new account <a href="/register">Register</a>
-            </p>
+            <button type="submit"
+                class="w-full bg-blue-500 text-white rounded-md px-4 py-2 transition duration-300 hover:bg-blue-600">
+                Login
+            </button>
         </form>
+        <div id="login-response" class="mt-4 h-10" />
+        <p class="text-center mt-4">
+            Create a new account <a href="/register" class="text-blue-500 hover:underline">Register</a>
+        </p>
     </div>
 }
 
 templ LoginError(message string) {
     if message != "" {
-        <div><span style="color: red;" >{ message}</span></div>
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md mb-4 text-center"><span>{ message}</span></div>
     }
 }

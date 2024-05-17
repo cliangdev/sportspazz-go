@@ -25,7 +25,7 @@ func NewUserService(store *UserStore, firebaseClient *auth.Client, logger *slog.
 
 func (u *UserService) RegisterUser(email, password string) (*User, error) {
 	if user := u.store.GetUserByEmail(email); user != nil {
-		return nil, fmt.Errorf("user %s is already registered", email)
+		return nil, fmt.Errorf("User is already registered")
 	}
 
 	params := (&auth.UserToCreate{}).
