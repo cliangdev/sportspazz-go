@@ -8,19 +8,16 @@ import (
 	"strings"
 	"time"
 
-	"firebase.google.com/go/v4/auth"
+	"github.com/dgrijalva/jwt-go"
+	"github.com/sportspazz/api/client"
+	"github.com/sportspazz/utils"
 )
+
+type ContextKey string
 
 const (
-	loggerKey       = "logger"
-	idTokenKey      = "idToken"
-	refreshTokenKey = "refreshToken"
+	loggerKey ContextKey = "logger"
 )
-
-type responseWriter struct {
-	http.ResponseWriter
-	statusCode int
-}
 
 func LoggerMiddleWare(logger *slog.Logger) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
@@ -53,73 +50,57 @@ func ContentTypeHeaderMiddleWare(next http.Handler) http.Handler {
 	})
 }
 
-func AuthenticateMiddleWare(firebaseClient *auth.Client, logger *slog.Logger) func(http.Handler) http.Handler {
+func AuthenticateMiddleWare(firebaseClient *client.FirebaseClient, logger *slog.Logger) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ctx := r.Context()
-			if idTokenCookie, _ := r.Cookie(idTokenKey); idTokenCookie != nil {
-				idToken := idTokenCookie.Value
-				token, err := firebaseClient.VerifyIDToken(context.Background(), idToken)
+			if idTokenCookie, _ := r.Cookie(string(utils.IdTokenKey)); idTokenCookie != nil {
+				token, err := firebaseClient.VerifyIDToken(idTokenCookie.Value)
 
 				if err != nil {
 					refreshToken(firebaseClient, w, r, logger)
-				} else {
-					email := token.Claims["email"].(string)
-					ctx = context.WithValue(ctx, "email", email)
-					ctx = context.WithValue(ctx, "name", email)
-					ctx = context.WithValue(ctx, "logined", true)
+				} else if token.Valid {
+					claims := token.Claims.(jwt.MapClaims)
+
+					email := claims[string(utils.Email)].(string)
+					ctx = context.WithValue(ctx, utils.Email, email)
+					ctx = context.WithValue(ctx, utils.Name, email)
+					ctx = context.WithValue(ctx, utils.Logined, true)
 				}
 			} else {
-				ctx = context.WithValue(ctx, "name", "")
-				ctx = context.WithValue(ctx, "logined", false)
+				ctx = context.WithValue(ctx, utils.Name, "")
+				ctx = context.WithValue(ctx, utils.Logined, false)
 			}
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
 }
 
-func refreshToken(firebaseClient *auth.Client, w http.ResponseWriter, r *http.Request, logger *slog.Logger) {
-	if refreshTokenCookie, err := r.Cookie("refreshToken"); err == nil {
+func refreshToken(firebaseClient *client.FirebaseClient, w http.ResponseWriter, r *http.Request, logger *slog.Logger) {
+	// TODO: update refresh token
+	if refreshTokenCookie, err := r.Cookie(string(utils.RefreshTokenKey)); err == nil {
 		refreshToken := refreshTokenCookie.Value
-		token, err := firebaseClient.VerifyIDTokenAndCheckRevoked(context.Background(), refreshToken)
+		token, err := firebaseClient.VerifyIDToken(refreshToken)
+		if err != nil {
+			logger.Error("not able to refresh token", slog.Any("err", err))
 
-		logger.Info("refreshing token", slog.Any("err", err))
+			utils.ClearTokenCookies(w)
 
-		if err == nil {
-			logger.Error("refresh error", slog.Any("err", err))
-			tokenJSON, _ := json.Marshal(token)
-			http.SetCookie(w, &http.Cookie{
-				Name:     idTokenKey,
-				Value:    string(tokenJSON),
-				Path:     "/",
-				Expires:  time.Unix(token.Claims["exp"].(int64), 0),
-				HttpOnly: true,
-				Secure:   true,
-				SameSite: http.SameSiteStrictMode,
-			})
-		} else {
-			http.SetCookie(w, &http.Cookie{
-				Name:     idTokenKey,
-				Value:    "",
-				Path:     "/",
-				Expires:  time.Unix(0, 0),
-				MaxAge:   -1,
-				HttpOnly: true,
-				Secure:   true,
-				SameSite: http.SameSiteStrictMode,
-			})
-			http.SetCookie(w, &http.Cookie{
-				Name:     refreshTokenKey,
-				Value:    "",
-				Path:     "/",
-				Expires:  time.Unix(0, 0),
-				MaxAge:   -1,
-				HttpOnly: true,
-				Secure:   true,
-				SameSite: http.SameSiteStrictMode,
-			})
 			w.Header().Set("HX-Redirect", "/")
 			w.WriteHeader(http.StatusOK)
+			return
 		}
+
+		claims := token.Claims.(jwt.MapClaims)
+		tokenJSON, _ := json.Marshal(token)
+		http.SetCookie(w, &http.Cookie{
+			Name:     string(utils.IdTokenKey),
+			Value:    string(tokenJSON),
+			Path:     "/",
+			Expires:  time.Unix(claims["exp"].(int64), 0),
+			HttpOnly: true,
+			Secure:   true,
+			SameSite: http.SameSiteStrictMode,
+		})
 	}
 }

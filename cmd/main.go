@@ -56,7 +56,7 @@ func main() {
 		logger.Error("error initializing firebase app", slog.Any("err", err))
 		os.Exit(1)
 	}
-	firebaseRest := client.NewFirebaseClient(configs.Envs.FirebaseApiKey)
+	firebaseRest := client.NewFirebaseClient(configs.Envs.FirebaseApiKey, configs.Envs.FirebaseProjectID,logger)
 
 	killSig := make(chan os.Signal, 1)
 	signal.Notify(killSig, os.Interrupt, syscall.SIGTERM)

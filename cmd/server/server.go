@@ -50,7 +50,7 @@ func (s *Server) Run() error {
 	router.Use(
 		middleware.LoggerMiddleWare(logger),
 		middleware.ContentTypeHeaderMiddleWare,
-		middleware.AuthenticateMiddleWare(firebaseAdminClient, logger),
+		middleware.AuthenticateMiddleWare(s.firebaseRest, logger),
 	)
 
 	// REST API handler
@@ -66,7 +66,7 @@ func (s *Server) Run() error {
 	registerHandler := web.NewRegisterHandler(userService, logger)
 	registerHandler.RegisterRoutes(router)
 
-	loginHandler := web.NewLoginHandler(userService, firebaseAdminClient, s.firebaseRest, logger)
+	loginHandler := web.NewLoginHandler(userService, s.firebaseRest, logger)
 	loginHandler.RegisterRoutes(router)
 
 	router.PathPrefix("/").Handler(http.FileServer(http.Dir("public")))
