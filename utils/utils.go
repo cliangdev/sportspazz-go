@@ -8,12 +8,14 @@ import (
 type ContextKey string
 
 const (
-	IdTokenKey      ContextKey = "id-token"
-	RefreshTokenKey ContextKey = "refresh-token"
+	IdTokenKey      ContextKey = "idToken"
+	RefreshTokenKey ContextKey = "refreshToken"
+	LoggerKey       ContextKey = "logger"
 	// For UI
-	Email ContextKey = "email"
-	Name ContextKey = "name"
-	Logined ContextKey = "logined"
+	UserIdKey  ContextKey = "userId"
+	EmailKey   ContextKey = "email"
+	NameKey    ContextKey = "name"
+	LoginedKey ContextKey = "logined"
 )
 
 func ClearTokenCookies(w http.ResponseWriter) {

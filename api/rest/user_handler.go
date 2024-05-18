@@ -3,7 +3,6 @@ package rest_api
 import (
 	"encoding/json"
 	"errors"
-	"log/slog"
 	"net/http"
 	"net/mail"
 
@@ -21,10 +20,6 @@ func NewUserHandler(userService *user.UserService) *UserHandler {
 	}
 }
 
-func getLogger(r *http.Request) *slog.Logger {
-	return r.Context().Value("logger").(*slog.Logger)
-}
-
 func (h *UserHandler) RegisterRoutes(router *mux.Router) {
 	router.HandleFunc("/users", h.registerUser).Methods(http.MethodPost)
 }
@@ -32,7 +27,6 @@ func (h *UserHandler) RegisterRoutes(router *mux.Router) {
 func (h *UserHandler) registerUser(w http.ResponseWriter, r *http.Request) {
 	var userRequest RegisterUserRequest
 	if err := json.NewDecoder(r.Body).Decode(&userRequest); err != nil {
-		getLogger(r).Error(err.Error())
 		InvalidJsonResponse(w)
 		return
 	}

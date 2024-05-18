@@ -13,6 +13,7 @@ import (
 	rest_api "github.com/sportspazz/api/rest"
 	web "github.com/sportspazz/api/web"
 	"github.com/sportspazz/middleware"
+	"github.com/sportspazz/service/poi"
 	"github.com/sportspazz/service/user"
 	"gorm.io/gorm"
 )
@@ -54,12 +55,17 @@ func (s *Server) Run() error {
 	)
 
 	// REST API handler
-	store := user.NewUserStoe(s.db, logger)
-	userService := user.NewUserService(store, firebaseAdminClient, logger)
+	userStore := user.NewUserStore(s.db, logger)
+	userService := user.NewUserService(userStore, firebaseAdminClient, logger)
 	userHandler := rest_api.NewUserHandler(userService)
 	userHandler.RegisterRoutes(subRouter)
 
-	// Templ HTMX handler
+	poiStore := poi.NewPoiStore(s.db, logger)
+	poiService := poi.NewPoiService(poiStore, logger)
+	poiHandler := rest_api.NewPoiHandler(poiService, s.firebaseRest)
+	poiHandler.RegisterRoutes(subRouter)
+
+	// HTML handler
 	homeHandler := web.NewHomeHandler(logger)
 	homeHandler.RegisterRoutes(router)
 
