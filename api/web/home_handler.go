@@ -24,7 +24,7 @@ func (h *HomeHandler) RegisterRoutes(router *mux.Router) {
 
 func (h *HomeHandler) serveHTTP(w http.ResponseWriter, r *http.Request) {
 	c := templates.Index()
-	if err := templates.Layout(c, "Sportspazz").Render(r.Context(), w); err != nil {
+	if err := templates.Layout(c).Render(r.Context(), w); err != nil {
 		http.Error(w, "Cannot render home page", http.StatusInternalServerError)
 	}
 }

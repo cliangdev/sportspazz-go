@@ -1,9 +1,11 @@
 package templates
 
 import "github.com/sportspazz/utils"
+import "github.com/sportspazz/configs"
+import "fmt"
 
-templ Layout(content templ.Component, title string) {
-    @header(title)
+templ Layout(content templ.Component) {
+    @header("Sportspazz", false)
     <body class="bg-gray-100 flex flex-col min-h-screen">
         @nav()
         <main class="flex-grow container mx-auto flex justify-center items-center">
@@ -13,13 +15,51 @@ templ Layout(content templ.Component, title string) {
     </body>
 }
 
-templ header(title string) {
+templ MapLayout(content templ.Component) {
+    @header("Sportspazz", true)
+    <body class="bg-gray-100 flex flex-col min-h-screen">
+        @nav()
+        <main class="flex-grow container mx-auto flex justify-center items-center">
+            @content
+        </main>
+        @mapScript()
+        @footer()
+    </body>
+}
+
+templ mapScript() {
+    <script>
+        function initAutocomplete() {
+            const cityInput = document.getElementById('city');
+            const placeIdInput = document.getElementById('cityPlaceId');
+            const autocomplete = new google.maps.places.Autocomplete(cityInput, {
+                types: ['(cities)'],
+            });
+
+            autocomplete.addListener('place_changed', () => {
+                const place = autocomplete.getPlace();
+                if (!place.place_id) {
+                    console.log("No place_id for the selected place.");
+                    return;
+                }
+
+                placeIdInput.value = place.place_id;
+            });
+        }
+        window.addEventListener('load', initAutocomplete);
+    </script>
+}
+
+templ header(title string, mapEnabled bool) {
     <head>
         <title>{ title }</title>
         <meta charset="UTF-8"/>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
         <script src="https://unpkg.com/htmx.org@1.9.12" integrity="sha384-ujb1lZYygJmzgSwoxRggbCHcjc0rB2XoQrxeTUQyRjrOnlCoYta87iKBWq3EsdM2" crossorigin="anonymous"></script>
         <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet"></link>
+        if mapEnabled {
+            <script src={ fmt.Sprintf("https://maps.googleapis.com/maps/api/js?key=%s&libraries=places&loading=async", configs.Envs.GoogleMapApiKey) }></script>
+        }
     </head>
 }
 
@@ -67,8 +107,8 @@ templ nav() {
 }
 
 templ footer() {
-    <footer class="bg-blue-400">
-        <div class="container mx-auto py-1 text-center">
+    <footer class="bg-blue-400 w-full py-1 text-center fixed bottom-0">
+        <div class="container mx-auto">
             <p class="text-white">© 2024 Sportspazz. All rights reserved.</p>
         </div>
     </footer>

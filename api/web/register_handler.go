@@ -34,7 +34,7 @@ func (h *RegisterHandler) RegisterRoutes(router *mux.Router) {
 
 func (h *RegisterHandler) serveRegisterPageHTML(w http.ResponseWriter, r *http.Request) {
 	content := templates.RegisterPage()
-	err := templates.Layout(content, "Sportspazz").Render(r.Context(), w)
+	err := templates.Layout(content).Render(r.Context(), w)
 
 	if err != nil {
 		http.Error(w, "Error rendering page", http.StatusInternalServerError)

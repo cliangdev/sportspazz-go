@@ -17,6 +17,7 @@ type Config struct {
 	FirebaseProjectID          string
 	FirebaseServiceAccountJson string
 	FirebaseApiKey             string
+	GoogleMapApiKey            string
 }
 
 var Envs = initConfig()
@@ -35,6 +36,7 @@ func initConfig() Config {
 		FirebaseProjectID:          getEnv("FIREBASE_PROJECT_ID", "firebase"),
 		FirebaseServiceAccountJson: getEnv("FIREBASE_SERVICE_ACCOUNT_JSON", "firebase-service-account.json"),
 		FirebaseApiKey:             getEnv("FIREBASE_API_KEY", "apiKey"),
+		GoogleMapApiKey:            getEnv("GOOGLE_MAP_API_KEY", "apiKey"),
 	}
 }
 

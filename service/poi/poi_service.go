@@ -14,6 +14,23 @@ func NewPoiService(store *PoiStore, logger *slog.Logger) *PoiService {
 	}
 }
 
-func (p *PoiService) CreatePOI(createdBy, name, description, address, city, sportType, note string) (Poi, error) {
-	return p.store.CreatePoi(createdBy, name, description, address, city, sportType, note), nil
+func (p *PoiService) CreatePoi(createdBy, name, description, address, cityId, sportType, thumbnailUrl, note string) (Poi, error) {
+	return p.store.CreatePoi(createdBy, name, description, address, cityId, sportType, thumbnailUrl, note), nil
+}
+
+func (p *PoiService) SearchPois(cityId, sport, cursor string, pageSize int) []Poi {
+	internalCursor := p.getInternalCursor(cursor)
+
+	return p.store.GetPois(cityId, sport, internalCursor, pageSize)
+}
+
+func (p *PoiService) getInternalCursor(cursor string) uint {
+	if cursor == "" {
+		return p.store.GetLatestPoiInternalId()
+	}
+	internalCursor, err := p.store.GetInternalCursor(cursor)
+	if err != nil {
+		return p.store.GetLatestPoiInternalId()
+	}
+	return internalCursor
 }
