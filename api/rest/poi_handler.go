@@ -25,29 +25,30 @@ func NewPoiHandler(poiService *poi.PoiService, firebaseClient *client.FirebaseCl
 }
 
 func (h *PoiHandler) RegisterRoutes(router *mux.Router) {
-	router.Handle("/pois", middleware.RestAuthMiddleware(http.HandlerFunc(h.createPOI), h.firebaseClient)).Methods(http.MethodPost)
+	router.Handle("/pois", middleware.RestAuthMiddleware(http.HandlerFunc(h.createPoi), h.firebaseClient)).Methods(http.MethodPost)
 }
 
-func (p *PoiHandler) createPOI(w http.ResponseWriter, r *http.Request) {
+func (p *PoiHandler) createPoi(w http.ResponseWriter, r *http.Request) {
 	var poiRequest CreatePoiRequest
 	if err := json.NewDecoder(r.Body).Decode(&poiRequest); err != nil {
 		InvalidJsonResponse(w)
 		return
 	}
 
-	if err := validCreatePOIRequest(poiRequest); err != nil {
+	if err := validCreatePoiRequest(poiRequest); err != nil {
 		ErrorJsonResponse(w, err.Error())
 		return
 	}
 
 	createdBy := r.Context().Value(utils.UserIdKey).(string)
-	newPoi, err := p.poiService.CreatePOI(
+	newPoi, err := p.poiService.CreatePoi(
 		createdBy,
 		poiRequest.Name,
 		poiRequest.Description,
 		poiRequest.Address,
-		poiRequest.City,
+		poiRequest.CityId,
 		poiRequest.SportType,
+		poiRequest.ThumbnailUrl,
 		poiRequest.Note)
 
 	if err != nil {
@@ -64,7 +65,6 @@ func (p *PoiHandler) createPOI(w http.ResponseWriter, r *http.Request) {
 		UpdatedBy:   newPoi.UpdatedBy,
 		Name:        newPoi.Name,
 		Address:     newPoi.Address,
-		City:        newPoi.Address,
 		SportType:   newPoi.SportType,
 		Description: newPoi.Description,
 		Note:        newPoi.Note,
@@ -73,7 +73,7 @@ func (p *PoiHandler) createPOI(w http.ResponseWriter, r *http.Request) {
 	JsonResponse(poiResponse, w)
 }
 
-func validCreatePOIRequest(poiRequest CreatePoiRequest) error {
+func validCreatePoiRequest(poiRequest CreatePoiRequest) error {
 	validate := validator.New()
 	if err := validate.Struct(poiRequest); err != nil {
 		return err

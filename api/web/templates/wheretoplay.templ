@@ -1,0 +1,76 @@
+package templates
+
+import "github.com/sportspazz/service/poi"
+
+templ WhereToPlayPage() {
+    <div class="container mx-auto p-4 flex flex-col space-y-4 h-screen">
+        <form hx-post="/wheretoplay"
+                hx-trigger="submit"
+                hx-target="#search-result"
+                hx-indicator=".spinner"
+                class="bg-white p-6 rounded-lg shadow-md flex space-x-4 ml-6 mr-6">
+            <div class="flex-1">
+                <select id="sport" name="sport" required
+                    class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    <option value="">Select a sport</option>
+                    <option value="football">Football</option>
+                    <option value="basketball">Basketball</option>
+                    <option value="baseball">Baseball</option>
+                    <option value="soccer">Soccer</option>
+                    <option value="tennis">Tennis</option>
+                    <option value="hockey">Hockey</option>
+                </select>
+            </div>
+            <div class="flex-1">
+                <input type="text" id="city" name="city" placeholder="Enter city" required
+                    class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"/>
+                <input type="hidden" id="cityPlaceId" name="cityPlaceId" />
+            </div>
+            <button type="submit"
+                class="relative bg-indigo-600 text-white px-4 py-2 rounded-md shadow hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                <span class="hidden spinner absolute top-0 left-0 h-full w-full flex justify-center items-center">
+                    <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A8.001 8.001 0 0120.41 7.589M16 20.09a8.045 8.045 0 01-3.117 1.85"></path>
+                    </svg>
+                </span>
+                <span class="text-white">Search</span>
+            </button>
+        </form>
+        <div id="search-result"></div>
+    </div>
+}
+
+templ SearchResult(pois []poi.Poi) {
+    <div class="container mx-auto p-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            for _, poi := range pois {
+                @PoiCardComponent(poi)
+            }
+        </div>
+    </div>
+}
+
+templ PoiCardComponent(poi poi.Poi) {
+    <div class="poi-item bg-white p-4 rounded-lg shadow">
+        <div class="flex items-center space-x-4">
+            <div class="place-info w-full max-w-md">
+                <img src={ poi.ThumbnailUrl }
+                    alt="Place Picture" loading="lazy" class="w-full h-32 object-cover rounded-lg" />
+                <p class="place-name text-lg font-semibold truncate">{ poi.Name }</p>
+                <p class="sport-type text-sm text-gray-500">{ poi.SportType }</p>
+                <p class="place-description text-sm text-gray-600">{ poi.Description }</p>
+            </div>
+        </div>
+    </div>
+}
+
+templ SearchError(message string) {
+    if message != "" {
+        <div class="max-w-md mx-auto">
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md mb-4 text-center">
+                <span>{ message}</span>
+            </div>
+        </div>
+    }
+}

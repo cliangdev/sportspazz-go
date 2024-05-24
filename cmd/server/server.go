@@ -75,6 +75,9 @@ func (s *Server) Run() error {
 	loginHandler := web.NewLoginHandler(userService, s.firebaseRest, logger)
 	loginHandler.RegisterRoutes(router)
 
+	whereToPlay := web.NewWhereToPlayHandler(logger, poiService)
+	whereToPlay.RegisterRoutes(router)
+
 	router.PathPrefix("/").Handler(http.FileServer(http.Dir("public")))
 
 	router.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
