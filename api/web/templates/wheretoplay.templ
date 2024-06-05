@@ -91,8 +91,8 @@ templ PoiCardComponent(poi poi.Poi) {
                 <img src={ poi.ThumbnailUrl }
                     alt="Place Picture" loading="lazy" class="w-full h-32 object-cover rounded-lg" />
                 <p class="place-name text-lg font-semibold truncate">{ poi.Name }</p>
-                <p class="sport-type text-sm text-gray-500">{ poi.SportType }</p>
-                <p class="place-description text-sm text-gray-600">{ poi.Description }</p>
+                <p class="sport-type text-sm font-semibold text-gray-500">{ poi.SportType }</p>
+                <p class="place-description text-sm text-gray-600 max-h-36 overflow-hidden">{ poi.Description }</p>
             </div>
         </div>
     </div>
