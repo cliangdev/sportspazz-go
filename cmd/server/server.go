@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 
+	"cloud.google.com/go/storage"
 	firebase "firebase.google.com/go/v4"
 	"github.com/gorilla/mux"
 	"github.com/sportspazz/api/client"
@@ -19,20 +20,27 @@ import (
 )
 
 type Server struct {
-	host         string
-	port         string
-	db           *gorm.DB
-	firebaseApp  *firebase.App
-	firebaseRest *client.FirebaseClient
+	host          string
+	port          string
+	db            *gorm.DB
+	firebaseApp   *firebase.App
+	firebaseRest  *client.FirebaseClient
+	storageClient *storage.Client
 }
 
-func NewServer(host, port string, db *gorm.DB, firebaseApp *firebase.App, firebaseRest *client.FirebaseClient) *Server {
+func NewServer(
+	host, port string,
+	db *gorm.DB,
+	firebaseApp *firebase.App,
+	firebaseRest *client.FirebaseClient,
+	storageClient *storage.Client) *Server {
 	return &Server{
-		host:         host,
-		port:         port,
-		db:           db,
-		firebaseApp:  firebaseApp,
-		firebaseRest: firebaseRest,
+		host:          host,
+		port:          port,
+		db:            db,
+		firebaseApp:   firebaseApp,
+		firebaseRest:  firebaseRest,
+		storageClient: storageClient,
 	}
 }
 
@@ -42,8 +50,9 @@ func (s *Server) Run() error {
 	router := mux.NewRouter()
 	subRouter := router.PathPrefix("/api/v1").Subrouter()
 
+	ctx := context.Background()
 	// middlewares
-	firebaseAdminClient, err := s.firebaseApp.Auth(context.Background())
+	firebaseAdminClient, err := s.firebaseApp.Auth(ctx)
 	if err != nil {
 		logger.Error("Cannot initialize Firebase admin client", slog.Any("err", err))
 		os.Exit(1)
@@ -75,7 +84,7 @@ func (s *Server) Run() error {
 	loginHandler := web.NewLoginHandler(userService, s.firebaseRest, logger)
 	loginHandler.RegisterRoutes(router)
 
-	whereToPlay := web.NewWhereToPlayHandler(logger, poiService)
+	whereToPlay := web.NewWhereToPlayHandler(logger, poiService, s.storageClient)
 	whereToPlay.RegisterRoutes(router)
 
 	router.PathPrefix("/").Handler(http.FileServer(http.Dir("public")))

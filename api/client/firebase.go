@@ -78,7 +78,7 @@ func (c *FirebaseClient) SignInWithEmailAndPassword(req SignInWithPasswordReques
 	return &res, nil
 }
 
-// Cache or move it outside. 
+// Cache or move it outside.
 // Unable to use Firebase admin SDK due to private Cache-Control response header without a max-age value.
 func (c *FirebaseClient) fetchPublicKeys() error {
 	resp, err := http.Get(idTokenCertURL)

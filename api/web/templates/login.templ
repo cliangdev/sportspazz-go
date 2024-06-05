@@ -3,7 +3,12 @@ package templates
 templ LoginPage() {
     <div class="max-w-md w-full px-6 py-8 bg-white rounded-lg shadow-lg">
         <h2 class="text-2xl font-semibold text-center mb-6">Login</h2>
-        <form hx-post="/login" hx-trigger="submit" hx-target="#login-response" hx-swap="innerHTML" class="space-y-4" >
+        <form hx-post="/login" 
+            hx-trigger="submit" 
+            hx-target="#login-response" 
+            hx-swap="innerHTML"
+            hx-indicator="#loading"
+            class="space-y-4" >
             <div>
                 <input id="email" name="email" type="email" placeholder="Email" required
                     class="w-full border rounded-md px-4 py-2 focus:outline-none focus:border-blue-500"/>

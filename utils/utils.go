@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"context"
 	"net/http"
 	"time"
 )
@@ -40,4 +41,9 @@ func ClearTokenCookies(w http.ResponseWriter) {
 		Secure:   true,
 		SameSite: http.SameSiteStrictMode,
 	})
+}
+
+func Logined(ctx context.Context) bool {
+	logined := ctx.Value(LoginedKey)
+    return logined != nil && logined == true
 }

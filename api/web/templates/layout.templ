@@ -22,32 +22,8 @@ templ MapLayout(content templ.Component) {
         <main class="flex-grow container mx-auto flex justify-center items-center">
             @content
         </main>
-        @mapScript()
         @footer()
     </body>
-}
-
-templ mapScript() {
-    <script>
-        function initAutocomplete() {
-            const cityInput = document.getElementById('city');
-            const placeIdInput = document.getElementById('cityPlaceId');
-            const autocomplete = new google.maps.places.Autocomplete(cityInput, {
-                types: ['(cities)'],
-            });
-
-            autocomplete.addListener('place_changed', () => {
-                const place = autocomplete.getPlace();
-                if (!place.place_id) {
-                    console.log("No place_id for the selected place.");
-                    return;
-                }
-
-                placeIdInput.value = place.place_id;
-            });
-        }
-        window.addEventListener('load', initAutocomplete);
-    </script>
 }
 
 templ header(title string, mapEnabled bool) {
@@ -61,11 +37,6 @@ templ header(title string, mapEnabled bool) {
             <script src={ fmt.Sprintf("https://maps.googleapis.com/maps/api/js?key=%s&libraries=places&loading=async", configs.Envs.GoogleMapApiKey) }></script>
         }
     </head>
-}
-
-func isLogined(ctx context.Context) bool{
-    logined := ctx.Value(utils.LoginedKey)
-    return logined != nil && logined == true
 }
 
 func userName(ctx context.Context) string {
@@ -82,7 +53,7 @@ templ nav() {
                     <a href="/wheretoplay" class="text-white hover:text-gray-300 px-3 py-2">Places</a>
                 </li>
             </ol>
-            if isLogined(ctx) {
+            if utils.Logined(ctx) {
                 <ol class="flex space-x-4 items-center mr-4">
                     <p class="text-white hidden md:block">Welcom { userName(ctx) }!</p> 
                     <button type="submit" hx-post="/logout" hx-trigger="click"
@@ -114,4 +85,10 @@ templ footer() {
             <p class="text-white">© 2024 Sportspazz. All rights reserved.</p>
         </div>
     </footer>
+}
+
+templ ErrorMessage(message string) {
+    if message != "" {
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md mb-4 text-center"><span>{ message}</span></div>
+    }
 }
