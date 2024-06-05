@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"cloud.google.com/go/storage"
 	firebase "firebase.google.com/go/v4"
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/mysql"
@@ -50,19 +51,24 @@ func main() {
 		os.Exit(1)
 	}
 
-	opt := option.WithCredentialsFile(configs.Envs.FirebaseServiceAccountJson)
-	firebaseApp, err := firebase.NewApp(context.Background(), nil, opt)
+	ctx := context.Background()
+	firebaseApp, err := firebase.NewApp(ctx, nil, option.WithCredentialsFile(configs.Envs.GCPApiKey))
 	if err != nil {
 		logger.Error("error initializing firebase app", slog.Any("err", err))
 		os.Exit(1)
 	}
-	firebaseRest := client.NewFirebaseClient(configs.Envs.FirebaseApiKey, configs.Envs.FirebaseProjectID,logger)
+	firebaseRest := client.NewFirebaseClient(configs.Envs.FirebaseApiKey, configs.Envs.FirebaseProjectID, logger)
+	storageClient, err := storage.NewClient(ctx, option.WithCredentialsFile(configs.Envs.GCPApiKey))
+	if err != nil {
+		logger.Error("error initializing cloud storage", slog.Any("err", err))
+		os.Exit(1)
+	}
 
 	killSig := make(chan os.Signal, 1)
 	signal.Notify(killSig, os.Interrupt, syscall.SIGTERM)
 
 	go func() {
-		server := server.NewServer(configs.Envs.Host, configs.Envs.Port, db, firebaseApp, firebaseRest)
+		server := server.NewServer(configs.Envs.Host, configs.Envs.Port, db, firebaseApp, firebaseRest, storageClient)
 		if err := server.Run(); err != nil {
 			logger.Error("Cannot start server", slog.Any("err", err))
 		}

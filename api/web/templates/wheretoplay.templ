@@ -1,44 +1,77 @@
 package templates
 
-import "github.com/sportspazz/service/poi"
+import (
+    "mime/multipart"
+
+    "github.com/sportspazz/service/poi"
+)
 
 templ WhereToPlayPage() {
     <div class="container mx-auto p-4 flex flex-col space-y-4 h-screen">
-        <form hx-post="/wheretoplay"
-                hx-trigger="submit"
-                hx-target="#search-result"
-                hx-indicator=".spinner"
-                class="bg-white p-6 rounded-lg shadow-md flex space-x-4 ml-6 mr-6">
-            <div class="flex-1">
-                <select id="sport" name="sport" required
-                    class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                    <option value="">Select a sport</option>
-                    <option value="football">Football</option>
-                    <option value="basketball">Basketball</option>
-                    <option value="baseball">Baseball</option>
-                    <option value="soccer">Soccer</option>
-                    <option value="tennis">Tennis</option>
-                    <option value="hockey">Hockey</option>
-                </select>
-            </div>
-            <div class="flex-1">
-                <input type="text" id="city" name="city" placeholder="Enter city" required
-                    class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"/>
-                <input type="hidden" id="cityPlaceId" name="cityPlaceId" />
-            </div>
-            <button type="submit"
-                class="relative bg-indigo-600 text-white px-4 py-2 rounded-md shadow hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-                <span class="hidden spinner absolute top-0 left-0 h-full w-full flex justify-center items-center">
+        <div class="container container mx-auto p-4 flex flex-col space-y-2 h-screen">
+            <form hx-post="/wheretoplay"
+                    hx-trigger="submit"
+                    hx-target="#search-result"
+                    hx-indicator="#spinner"
+                    class="bg-white p-4 rounded-lg shadow-md flex space-x-4 mb-0">
+                <div class="flex-1">
+                    <select id="sport" name="sport" required
+                        class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        <option value="">Select a sport</option>
+                        <option value="football">Football</option>
+                        <option value="basketball">Basketball</option>
+                        <option value="baseball">Baseball</option>
+                        <option value="soccer">Soccer</option>
+                        <option value="tennis">Tennis</option>
+                        <option value="hockey">Hockey</option>
+                    </select>
+                </div>
+                <div class="flex-1">
+                    <input type="text" id="city" name="city" placeholder="Enter city" required
+                        class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"/>
+                    <input type="hidden" id="cityPlaceId" name="cityPlaceId" />
+                </div>
+                <button type="submit"
+                    class="relative bg-indigo-600 text-white px-4 py-2 rounded-md shadow hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                    <span class="text-white">Search</span>
+                </button>
+                <span id="spinner" class="htmx-indicator">
                     <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A8.001 8.001 0 0120.41 7.589M16 20.09a8.045 8.045 0 01-3.117 1.85"></path>
                     </svg>
                 </span>
-                <span class="text-white">Search</span>
-            </button>
-        </form>
+            </form>
+            <div class="flex justify-end mt-1">
+                <a href="/wheretoplay/new" class="text-sm text-indigo-600 hover:text-indigo-800">Create a new place</a>
+            </div>
+        </div>
         <div id="search-result"></div>
     </div>
+    @cityAutoComplete()
+}
+
+templ cityAutoComplete() {
+    <script>
+        function initAutocomplete() {
+            const cityInput = document.getElementById('city');
+            const placeIdInput = document.getElementById('cityPlaceId');
+            const autocomplete = new google.maps.places.Autocomplete(cityInput, {
+                types: ['(cities)'],
+            });
+
+            autocomplete.addListener('place_changed', () => {
+                const place = autocomplete.getPlace();
+                if (!place.place_id) {
+                    console.log("No place_id for the selected place.");
+                    return;
+                }
+
+                placeIdInput.value = place.place_id;
+            });
+        }
+        window.addEventListener('load', initAutocomplete);
+    </script>
 }
 
 templ SearchResult(pois []poi.Poi) {
@@ -73,4 +106,88 @@ templ SearchError(message string) {
             </div>
         </div>
     }
+}
+
+templ CreateNewPlace() {
+    <div class="bg-white p-8 rounded shadow-md w-full max-w-lg">
+        <h1 class="text-2xl font-bold mb-6 text-center">Create a New Place</h1>
+        <form id="create-place-form"
+            hx-post="/wheretoplay/new"
+            hx-trigger="submit"
+            hx-target="#submit-response"
+            enctype="multipart/form-data">
+            <div class="mb-4">
+                <input type="text" id="name" name="name" placeholder="Name"
+                    class="border border-gray-300 rounded p-2 w-full" required minlength="3" maxlength="100"/>
+            </div>
+            <div class="mb-4">
+                <textarea id="description" name="description" placeholder="Description"
+                    class="border border-gray-300 rounded p-2 w-full" required minlength="50" maxlength="8000"></textarea>
+            </div>
+            <div class="mb-4">
+                <input type="text" id="address" name="address" placeholder="Address"
+                    class="border border-gray-300 rounded p-2 w-full" required/>
+                <input type="hidden" id="cityPlaceId" name="cityPlaceId" />
+            </div>
+            <div class="mb-4">
+                <select id="sport" name="sport" class="border border-gray-300 rounded p-2 w-full" required>
+                    <option value="">Select a sport</option>
+                    <option value="Soccer">Soccer</option>
+                    <option value="Basketball">Basketball</option>
+                    <option value="Baseball">Baseball</option>
+                    <option value="Tennis">Tennis</option>
+                    <option value="Golf">Golf</option>
+                    <option value="Running">Running</option>
+                    <option value="Cycling">Cycling</option>
+                    <option value="Swimming">Swimming</option>
+                    <option value="Volleyball">Volleyball</option>
+                    <option value="Cricket">Cricket</option>
+                </select>
+            </div>
+            <div class="mb-4">
+                <label for="thumbnail" class="block text-gray-700 font-medium mb-2">Thumbnail</label>
+                <input type="file" id="thumbnail" name="thumbnail" class="border border-gray-300 rounded p-2 w-full"/>
+            </div>
+            <div id="submit-response" class="mt-2 h-10" />
+            <button type="submit"
+                class="w-full bg-blue-500 text-white rounded-md px-4 py-2 mt-4 transition duration-300 hover:bg-blue-600">
+                Submit?
+            </button>
+        </form>
+    </div>
+    @addressAutoComplete()
+}
+
+templ addressAutoComplete() {
+    <script>
+        function initAutocomplete() {
+            const addressInput = document.getElementById('address');
+            const placeIdInput = document.getElementById('cityPlaceId');
+            const autocomplete = new google.maps.places.Autocomplete(addressInput, {
+                types: ['(cities)'],
+            });
+
+            autocomplete.addListener('place_changed', () => {
+                const place = autocomplete.getPlace();
+                if (!place.place_id) {
+                    console.log("No place_id for the selected place.");
+                    return;
+                }
+
+                placeIdInput.value = place.place_id;
+            });
+        }
+
+        google.maps.event.addDomListener(window, 'load', initAutocomplete);
+    </script>
+}
+
+type CreateNewPlaceFormInput struct {
+    Name                string
+    Description         string
+    Address             string
+    CityId              string
+    Sport               string
+    Thumbnail           multipart.File
+    ThumbnailFilename   string
 }
