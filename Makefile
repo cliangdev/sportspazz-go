@@ -26,3 +26,6 @@ clean:
 	rm -f api/web/templates/*_templ.go
 	rm -f api/web/templates/*_templ.txt
 	@echo "Cleanup complete"
+
+build-cli:
+	go build -o bin/sportspazz ./cmd/cli/main.go
