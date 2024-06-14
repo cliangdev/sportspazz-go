@@ -13,7 +13,6 @@
 
 # Ignore generated files
 bin/
-pkg/
 .air
 .air.pid
 tmp/

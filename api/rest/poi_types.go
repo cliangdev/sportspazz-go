@@ -5,9 +5,9 @@ type CreatePoiRequest struct {
 	Address      string `json:"address"`
 	CityId       string `json:"city_id" validate:"required,min=2,max=255"`
 	SportType    string `json:"sport_type" validate:"required,min=2,max=50"`
-	ThumbnailUrl string `json:"thumbnail_url" validate:"required,min=10"`
-	Description  string `json:"description" validate:"required,min=50,max=8000"`
-	Note         string `json:"note" validate:"min=50,max=8000"`
+	ThumbnailUrl string `json:"thumbnail_url"`
+	Description  string `json:"description"`
+	Note         string `json:"note"`
 }
 
 type PoiResponse struct {
