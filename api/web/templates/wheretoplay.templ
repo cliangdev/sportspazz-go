@@ -4,6 +4,7 @@ import (
     "mime/multipart"
 
     "github.com/sportspazz/service/poi"
+    "net/url"
 )
 
 templ WhereToPlayPage() {
@@ -88,10 +89,31 @@ templ PoiCardComponent(poi poi.Poi) {
     <div class="poi-item bg-white p-4 rounded-lg shadow">
         <div class="flex items-center space-x-4">
             <div class="place-info w-full max-w-md">
-                <img src={ poi.ThumbnailUrl }
-                    alt="Place Picture" loading="lazy" class="w-full h-32 object-cover rounded-lg" />
-                <p class="place-name text-lg font-semibold truncate">{ poi.Name }</p>
+                if poi.ThumbnailUrl != "" {
+                    <img src={ poi.ThumbnailUrl }
+                        alt="Place Picture" loading="lazy" class="w-full h-32 object-cover rounded-lg" />
+                } else {
+                    <img src="/public/assets/where_to_play_default_thumbnail.jpg"
+                        alt="Place Picture" loading="lazy" class="w-full h-32 object-cover rounded-lg" />
+                }
+                <p class="place-name text-lg font-semibold truncate" title={ poi.Name }>{ poi.Name }</p>
                 <p class="sport-type text-sm font-semibold text-gray-500">{ poi.SportType }</p>
+                <p>
+                    <a href={ templ.SafeURL("https://www.google.com/maps/search/?api=1&query=" + url.QueryEscape(poi.Address)) }
+                        target="_blank"
+                        class="relative text-xs text-blue-400 hover:text-blue-800 group">
+                        { poi.Address }
+                    </a>
+                </p>
+                if poi.Website != "" {
+                   <p>
+                        <a href={ templ.SafeURL(poi.Website) }
+                            target="_blank"
+                            class="relative text-xs text-blue-400 hover:text-blue-800 group">
+                            { poi.Website }
+                        </a>
+                    </p> 
+                }
                 <p class="place-description text-sm text-gray-600 max-h-36 overflow-hidden">{ poi.Description }</p>
             </div>
         </div>
@@ -128,6 +150,10 @@ templ CreateNewPlace() {
                 <input type="text" id="address" name="address" placeholder="Address"
                     class="border border-gray-300 rounded p-2 w-full" required/>
                 <input type="hidden" id="cityPlaceId" name="cityPlaceId" />
+            </div>
+            <div class="mb-4">
+                <input type="text" id="website" name="website" placeholder="Website"
+                    class="border border-gray-300 rounded p-2 w-full" required/>
             </div>
             <div class="mb-4">
                 <select id="sport" name="sport" class="border border-gray-300 rounded p-2 w-full" required>
@@ -187,6 +213,7 @@ type CreateNewPlaceFormInput struct {
     Description         string
     Address             string
     CityId              string
+    Website             string
     Sport               string
     Thumbnail           multipart.File
     ThumbnailFilename   string

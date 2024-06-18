@@ -12,6 +12,6 @@ CREATE TABLE IF NOT EXISTS pois (
      address VARCHAR(150),
      city_id VARCHAR(255) NOT NULL,
      thumbnail_url VARCHAR(500),
-     website_url VARCHAR(100),
+     website VARCHAR(100),
      INDEX idx_1 (city_id, sport_type)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

@@ -20,7 +20,7 @@ func NewPoiStore(db *gorm.DB, logger *slog.Logger) *PoiStore {
 	}
 }
 
-func (s *PoiStore) CreatePoi(createdBy, name, description, address, cityId, sportType, thumbnailUrl, note string) Poi {
+func (s *PoiStore) CreatePoi(createdBy, name, description, address, cityId, website, sportType, thumbnailUrl, note string) Poi {
 	now := time.Now().UTC()
 	poi := Poi{
 		ID:           uuid.New().String(),
@@ -30,6 +30,7 @@ func (s *PoiStore) CreatePoi(createdBy, name, description, address, cityId, spor
 		UpdatedBy:    createdBy,
 		Name:         name,
 		Address:      address,
+		Website:      website,
 		CityId:       cityId,
 		SportType:    sportType,
 		Description:  description,
