@@ -87,7 +87,8 @@ func (s *Server) Run() error {
 	whereToPlay := web.NewWhereToPlayHandler(logger, poiService, s.storageClient)
 	whereToPlay.RegisterRoutes(router)
 
-	router.PathPrefix("/").Handler(http.FileServer(http.Dir("public")))
+	fs := http.FileServer(http.Dir("./public"))
+	router.PathPrefix("/public/").Handler(http.StripPrefix("/public/", fs))
 
 	router.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
 		path, _ := route.GetPathTemplate()

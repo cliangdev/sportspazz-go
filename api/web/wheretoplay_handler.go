@@ -105,6 +105,7 @@ func (h *WhereToPlayHandler) createNewPlace(w http.ResponseWriter, r *http.Reque
 		input.Description,
 		input.Address,
 		input.CityId,
+		input.Website,
 		input.Sport,
 		thumbnailUrl,
 		"",
@@ -130,6 +131,7 @@ func (h *WhereToPlayHandler) parseCreateNewPlaceFormInputAndValidate(r *http.Req
 		Description:       r.FormValue("description"),
 		Address:           r.FormValue("address"),
 		CityId:            r.FormValue("cityPlaceId"),
+		Website:           r.FormValue("website"),
 		Sport:             r.FormValue("sport"),
 		Thumbnail:         thumbnail,
 		ThumbnailFilename: thumbnailHeader.Filename,
@@ -141,6 +143,6 @@ func (h *WhereToPlayHandler) parseCreateNewPlaceFormInputAndValidate(r *http.Req
 	if len(input.Description) < 50 || len(input.Description) > 8000 {
 		return nil, fmt.Errorf("description must be 550 to 8000 characters")
 	}
-	
+
 	return &input, nil
 }

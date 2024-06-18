@@ -11,6 +11,7 @@ type Poi struct {
 	UpdatedBy    string
 	Name         string
 	Address      string
+	Website      string
 	CityId       string
 	SportType    string
 	ThumbnailUrl string
