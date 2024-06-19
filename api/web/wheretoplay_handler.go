@@ -4,6 +4,7 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"strconv"
 
 	"fmt"
 
@@ -16,6 +17,11 @@ import (
 )
 
 const maxThumbnailSize = 100 * 1024 // 100 KB
+
+const cityPlaceIdParam = "cityPlaceId"
+const sportParam = "sport"
+const pageSizeParam = "pageSize"
+const cursorParam = "cursor"
 
 type WhereToPlayHandler struct {
 	logger        *slog.Logger
@@ -33,7 +39,7 @@ func NewWhereToPlayHandler(logger *slog.Logger, poiService *poi.PoiService, stor
 
 func (h *WhereToPlayHandler) RegisterRoutes(router *mux.Router) {
 	router.HandleFunc("/wheretoplay", h.serveWhereToPlayPageHTML).Methods(http.MethodGet)
-	router.HandleFunc("/wheretoplay", h.searchWhereToPlay).Methods(http.MethodPost)
+	router.HandleFunc("/wheretoplay/search", h.searchWhereToPlay).Methods(http.MethodGet)
 	router.HandleFunc("/wheretoplay/new", h.serveCreateNewPlacePageHTML).Methods(http.MethodGet)
 	router.HandleFunc("/wheretoplay/new", h.createNewPlace).Methods(http.MethodPost)
 }
@@ -49,18 +55,25 @@ func (h *WhereToPlayHandler) serveWhereToPlayPageHTML(w http.ResponseWriter, r *
 }
 
 func (h *WhereToPlayHandler) searchWhereToPlay(w http.ResponseWriter, r *http.Request) {
-	cityPlaceId := r.FormValue("cityPlaceId")
-	sport := r.FormValue("sport")
+	cityPlaceId := r.FormValue(cityPlaceIdParam)
+	sport := r.FormValue(sportParam)
+
+	pageSize := 15
+	cursor := r.URL.Query().Get(cursorParam)
+	pageSizeParam := r.URL.Query().Get(pageSizeParam)
+	if pageSizeParam != "" {
+		pageSize, _ = strconv.Atoi(pageSizeParam)
+	}
 
 	if cityPlaceId == "" || sport == "" {
 		templates.SearchError("Pick a sport and city!").Render(r.Context(), w)
 		return
 	}
 
-	h.logger.Info("", slog.Any("cityPlaceId", cityPlaceId))
+	pois := h.poiService.SearchPois(cityPlaceId, sport, cursor, pageSize)
 
 	w.WriteHeader(http.StatusOK)
-	templates.SearchResult(h.poiService.SearchPois(cityPlaceId, sport, "", 50)).Render(r.Context(), w)
+	templates.SearchResult(pois, sport, cityPlaceId, pageSize).Render(r.Context(), w)
 }
 
 func (h *WhereToPlayHandler) serveCreateNewPlacePageHTML(w http.ResponseWriter, r *http.Request) {
