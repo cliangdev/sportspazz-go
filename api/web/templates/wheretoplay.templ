@@ -5,12 +5,13 @@ import (
 
     "github.com/sportspazz/service/poi"
     "net/url"
+    "fmt"
 )
 
 templ WhereToPlayPage() {
     <div class="container mx-auto p-4 flex flex-col space-y-4 h-screen">
         <div class="container container mx-auto p-4 flex flex-col space-y-2 h-screen">
-            <form hx-post="/wheretoplay"
+            <form hx-get="/wheretoplay/search"
                     hx-trigger="submit"
                     hx-target="#search-result"
                     hx-indicator="#spinner"
@@ -36,56 +37,31 @@ templ WhereToPlayPage() {
                     class="relative bg-indigo-600 text-white px-4 py-2 rounded-md shadow hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
                     <span class="text-white">Search</span>
                 </button>
-                <span id="spinner" class="htmx-indicator">
-                    <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A8.001 8.001 0 0120.41 7.589M16 20.09a8.045 8.045 0 01-3.117 1.85"></path>
-                    </svg>
-                </span>
+
             </form>
             <div class="flex justify-end mt-1">
                 <a href="/wheretoplay/new" class="text-sm text-indigo-600 hover:text-indigo-800">Create a new place</a>
             </div>
+            <div class="container mx-auto p-6">
+                <div id="search-result" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+                <center>
+                    <div id="spinner" class="htmx-indicator m-8">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 24 24"><g><circle cx="12" cy="3" r="1" fill="currentColor"><animate id="svgSpinners12DotsScaleRotate0" attributeName="r" begin="0;svgSpinners12DotsScaleRotate2.end-0.5s" calcMode="spline" dur="0.6s" keySplines=".27,.42,.37,.99;.53,0,.61,.73" values="1;2;1"/></circle><circle cx="16.5" cy="4.21" r="1" fill="currentColor"><animate id="svgSpinners12DotsScaleRotate1" attributeName="r" begin="svgSpinners12DotsScaleRotate0.begin+0.1s" calcMode="spline" dur="0.6s" keySplines=".27,.42,.37,.99;.53,0,.61,.73" values="1;2;1"/></circle><circle cx="7.5" cy="4.21" r="1" fill="currentColor"><animate id="svgSpinners12DotsScaleRotate2" attributeName="r" begin="svgSpinners12DotsScaleRotate4.begin+0.1s" calcMode="spline" dur="0.6s" keySplines=".27,.42,.37,.99;.53,0,.61,.73" values="1;2;1"/></circle><circle cx="19.79" cy="7.5" r="1" fill="currentColor"><animate id="svgSpinners12DotsScaleRotate3" attributeName="r" begin="svgSpinners12DotsScaleRotate1.begin+0.1s" calcMode="spline" dur="0.6s" keySplines=".27,.42,.37,.99;.53,0,.61,.73" values="1;2;1"/></circle><circle cx="4.21" cy="7.5" r="1" fill="currentColor"><animate id="svgSpinners12DotsScaleRotate4" attributeName="r" begin="svgSpinners12DotsScaleRotate6.begin+0.1s" calcMode="spline" dur="0.6s" keySplines=".27,.42,.37,.99;.53,0,.61,.73" values="1;2;1"/></circle><circle cx="21" cy="12" r="1" fill="currentColor"><animate id="svgSpinners12DotsScaleRotate5" attributeName="r" begin="svgSpinners12DotsScaleRotate3.begin+0.1s" calcMode="spline" dur="0.6s" keySplines=".27,.42,.37,.99;.53,0,.61,.73" values="1;2;1"/></circle><circle cx="3" cy="12" r="1" fill="currentColor"><animate id="svgSpinners12DotsScaleRotate6" attributeName="r" begin="svgSpinners12DotsScaleRotate8.begin+0.1s" calcMode="spline" dur="0.6s" keySplines=".27,.42,.37,.99;.53,0,.61,.73" values="1;2;1"/></circle><circle cx="19.79" cy="16.5" r="1" fill="currentColor"><animate id="svgSpinners12DotsScaleRotate7" attributeName="r" begin="svgSpinners12DotsScaleRotate5.begin+0.1s" calcMode="spline" dur="0.6s" keySplines=".27,.42,.37,.99;.53,0,.61,.73" values="1;2;1"/></circle><circle cx="4.21" cy="16.5" r="1" fill="currentColor"><animate id="svgSpinners12DotsScaleRotate8" attributeName="r" begin="svgSpinners12DotsScaleRotatea.begin+0.1s" calcMode="spline" dur="0.6s" keySplines=".27,.42,.37,.99;.53,0,.61,.73" values="1;2;1"/></circle><circle cx="16.5" cy="19.79" r="1" fill="currentColor"><animate id="svgSpinners12DotsScaleRotate9" attributeName="r" begin="svgSpinners12DotsScaleRotate7.begin+0.1s" calcMode="spline" dur="0.6s" keySplines=".27,.42,.37,.99;.53,0,.61,.73" values="1;2;1"/></circle><circle cx="7.5" cy="19.79" r="1" fill="currentColor"><animate id="svgSpinners12DotsScaleRotatea" attributeName="r" begin="svgSpinners12DotsScaleRotateb.begin+0.1s" calcMode="spline" dur="0.6s" keySplines=".27,.42,.37,.99;.53,0,.61,.73" values="1;2;1"/></circle><circle cx="12" cy="21" r="1" fill="currentColor"><animate id="svgSpinners12DotsScaleRotateb" attributeName="r" begin="svgSpinners12DotsScaleRotate9.begin+0.1s" calcMode="spline" dur="0.6s" keySplines=".27,.42,.37,.99;.53,0,.61,.73" values="1;2;1"/></circle><animateTransform attributeName="transform" dur="6s" repeatCount="indefinite" type="rotate" values="360 12 12;0 12 12"/></g></svg>
+                    </div>
+                </center>
+            </div>
         </div>
-        <div id="search-result"></div>
     </div>
     @cityAutoComplete()
 }
 
-templ cityAutoComplete() {
-    <script>
-        function initAutocomplete() {
-            const cityInput = document.getElementById('city');
-            const placeIdInput = document.getElementById('cityPlaceId');
-            const autocomplete = new google.maps.places.Autocomplete(cityInput, {
-                types: ['(cities)'],
-            });
-
-            autocomplete.addListener('place_changed', () => {
-                const place = autocomplete.getPlace();
-                if (!place.place_id) {
-                    console.log("No place_id for the selected place.");
-                    return;
-                }
-
-                placeIdInput.value = place.place_id;
-            });
-        }
-        window.addEventListener('load', initAutocomplete);
-    </script>
+templ SearchResult(pois poi.Pois, sport, cityPlaceId string, pageSize int) {
+    for idx, poi := range pois.Results {
+        @PoiCardComponent(poi, idx == (len(pois.Results) - 1), pois.Cursor, sport, cityPlaceId, pageSize)
+    }
 }
 
-templ SearchResult(pois []poi.Poi) {
-    <div class="container mx-auto p-6">
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            for _, poi := range pois {
-                @PoiCardComponent(poi)
-            }
-        </div>
-    </div>
-}
-
-templ PoiCardComponent(poi poi.Poi) {
+templ PoiCardComponent(poi poi.Poi, lastPoi bool, cursor string, sport, cityPlaceId string, pageSize int) {
     <div class="poi-item bg-white p-4 rounded-lg shadow">
         <div class="flex items-center space-x-4">
             <div class="place-info w-full max-w-md">
@@ -117,6 +93,13 @@ templ PoiCardComponent(poi poi.Poi) {
                 <p class="place-description text-sm text-gray-600 max-h-36 overflow-hidden">{ poi.Description }</p>
             </div>
         </div>
+        if lastPoi && cursor != "" {
+            <div hx-trigger="revealed" 
+                hx-get={ fmt.Sprintf("/wheretoplay/search?sport=%s&cityPlaceId=%s&pageSize=%d&cursor=%s", sport, cityPlaceId, pageSize, cursor)} 
+                hx-swap="beforeend"
+                hx-indicator="#spinner"
+                hx-target="#search-result"></div>
+        }
     </div>
 }
 
@@ -205,6 +188,29 @@ templ addressAutoComplete() {
         }
 
         google.maps.event.addDomListener(window, 'load', initAutocomplete);
+    </script>
+}
+
+templ cityAutoComplete() {
+    <script>
+        function initAutocomplete() {
+            const cityInput = document.getElementById('city');
+            const placeIdInput = document.getElementById('cityPlaceId');
+            const autocomplete = new google.maps.places.Autocomplete(cityInput, {
+                types: ['(cities)'],
+            });
+
+            autocomplete.addListener('place_changed', () => {
+                const place = autocomplete.getPlace();
+                if (!place.place_id) {
+                    console.log("No place_id for the selected place.");
+                    return;
+                }
+
+                placeIdInput.value = place.place_id;
+            });
+        }
+        window.addEventListener('load', initAutocomplete);
     </script>
 }
 

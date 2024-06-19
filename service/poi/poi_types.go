@@ -18,3 +18,8 @@ type Poi struct {
 	Description  string
 	Note         string
 }
+
+type Pois struct {
+	Results []Poi
+	Cursor   string
+}
