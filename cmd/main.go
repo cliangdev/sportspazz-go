@@ -11,29 +11,28 @@ import (
 	"cloud.google.com/go/storage"
 	firebase "firebase.google.com/go/v4"
 	"github.com/golang-migrate/migrate/v4"
-	_ "github.com/golang-migrate/migrate/v4/database/mysql"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/sportspazz/api/client"
 	"github.com/sportspazz/cmd/server"
 	"github.com/sportspazz/configs"
 	"google.golang.org/api/option"
-	"gorm.io/driver/mysql"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
 func main() {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 
-	dsn := fmt.Sprintf("%s:%s@tcp(%s)/%s?parseTime=true",
+	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable&TimeZone=UTC",
 		configs.Envs.DBUser,
 		configs.Envs.DBPassword,
-		configs.Envs.DBAddress,
+		configs.Envs.DBHost,
+		configs.Envs.DBPort,
 		configs.Envs.DBName,
 	)
 
-	db, _ := gorm.Open(mysql.New(mysql.Config{
-		DSN: dsn,
-	}), &gorm.Config{})
+	db, _ := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 
 	if err := db.Exec("SELECT 1").Error; err != nil {
 		logger.Error("cannot ping database", slog.Any("err", err))
@@ -41,7 +40,7 @@ func main() {
 	}
 	logger.Info("Connected to database", slog.String("database", configs.Envs.DBName))
 
-	m, err := migrate.New("file://"+configs.Envs.DBMigrationDir, "mysql://"+dsn)
+	m, err := migrate.New("file://"+configs.Envs.DBMigrationDir, dsn)
 	if err != nil {
 		logger.Error("cannot initialize db migration", slog.Any("err", err))
 		os.Exit(1)
