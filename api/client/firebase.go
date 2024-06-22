@@ -2,20 +2,25 @@ package client
 
 import (
 	"bytes"
+	"context"
 	"crypto/rsa"
 	"encoding/json"
 	"fmt"
 	"log/slog"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/google"
+	"google.golang.org/api/iamcredentials/v1"
 )
 
 const (
 	idTokenCertURL        = "https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com"
-	signInWithPasswordURL = "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key="
+	signInWithPasswordURL = "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword"
 )
 
 type SignInWithPasswordRequest struct {
@@ -41,28 +46,63 @@ type SignInWithPasswordResponse struct {
 }
 
 type FirebaseClient struct {
-	apiKey     string
-	projectID  string
-	publicKeys map[string]*rsa.PublicKey
-	logger     *slog.Logger
+	projectID          string
+	publicKeys         map[string]*rsa.PublicKey
+	serviceAccountFile string
+	tokenSource        oauth2.TokenSource
+	logger             *slog.Logger
 }
 
-func NewFirebaseClient(apiKey, projectID string, logger *slog.Logger) *FirebaseClient {
-	return &FirebaseClient{
-		apiKey:    apiKey,
-		projectID: projectID,
-		logger:    logger,
+// Firebase REST client for authenticating email login and verifying JWT token
+func NewFirebaseClient(serviceAccountFile string, logger *slog.Logger) (*FirebaseClient, error) {
+	ctx := context.Background()
+
+	serviceAccountJSON, err := os.ReadFile(serviceAccountFile)
+	if err != nil {
+		return nil, fmt.Errorf("error reading service account file: %v", err)
 	}
+
+	creds, err := google.CredentialsFromJSON(ctx, serviceAccountJSON, iamcredentials.CloudPlatformScope)
+	if err != nil {
+		return nil, fmt.Errorf("error loading service account file: %v", err)
+	}
+
+	return &FirebaseClient{
+		serviceAccountFile: serviceAccountFile,
+		projectID:          creds.ProjectID,
+		logger:             logger,
+		tokenSource:        creds.TokenSource,
+	}, nil
+}
+
+func (c *FirebaseClient) getAccessToken() (string, error) {
+	token, err := c.tokenSource.Token()
+	if err != nil {
+		return "", fmt.Errorf("error obtaining access token: %v", err)
+	}
+	return token.AccessToken, nil
 }
 
 func (c *FirebaseClient) SignInWithEmailAndPassword(req SignInWithPasswordRequest) (*SignInWithPasswordResponse, error) {
-	url := signInWithPasswordURL + c.apiKey
 	jsonData, err := json.Marshal(req)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := http.Post(url, "application/json", bytes.NewBuffer(jsonData))
+	accessToken, err := c.getAccessToken()
+	if err != nil {
+		return nil, err
+	}
+
+	client := &http.Client{}
+	request, err := http.NewRequest("POST", signInWithPasswordURL, bytes.NewBuffer(jsonData))
+	if err != nil {
+		return nil, err
+	}
+	request.Header.Set("Authorization", "Bearer "+accessToken)
+	request.Header.Set("Content-Type", "application/json")
+
+	resp, err := client.Do(request)
 	if err != nil {
 		return nil, err
 	}

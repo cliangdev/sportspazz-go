@@ -20,27 +20,28 @@ import (
 )
 
 type Server struct {
-	host          string
-	port          string
-	db            *gorm.DB
-	firebaseApp   *firebase.App
-	firebaseRest  *client.FirebaseClient
-	storageClient *storage.Client
+	host           string
+	port           string
+	db             *gorm.DB
+	firebaseApp    *firebase.App
+	firebaseClient *client.FirebaseClient
+	storageClient  *storage.Client
 }
 
 func NewServer(
 	host, port string,
 	db *gorm.DB,
 	firebaseApp *firebase.App,
-	firebaseRest *client.FirebaseClient,
+	firebaseClient *client.FirebaseClient,
 	storageClient *storage.Client) *Server {
+
 	return &Server{
-		host:          host,
-		port:          port,
-		db:            db,
-		firebaseApp:   firebaseApp,
-		firebaseRest:  firebaseRest,
-		storageClient: storageClient,
+		host:           host,
+		port:           port,
+		db:             db,
+		firebaseApp:    firebaseApp,
+		firebaseClient: firebaseClient,
+		storageClient:  storageClient,
 	}
 }
 
@@ -60,7 +61,7 @@ func (s *Server) Run() error {
 	router.Use(
 		middleware.LoggerMiddleWare(logger),
 		middleware.ContentTypeHeaderMiddleWare,
-		middleware.AuthenticateMiddleWare(s.firebaseRest, logger),
+		middleware.AuthenticateMiddleWare(s.firebaseClient, logger),
 	)
 
 	// REST API handler
@@ -71,7 +72,7 @@ func (s *Server) Run() error {
 
 	poiStore := poi.NewPoiStore(s.db, logger)
 	poiService := poi.NewPoiService(poiStore, logger)
-	poiHandler := rest_api.NewPoiHandler(poiService, s.firebaseRest)
+	poiHandler := rest_api.NewPoiHandler(poiService, s.firebaseClient)
 	poiHandler.RegisterRoutes(subRouter)
 
 	// HTML handler
@@ -81,7 +82,7 @@ func (s *Server) Run() error {
 	registerHandler := web.NewRegisterHandler(userService, logger)
 	registerHandler.RegisterRoutes(router)
 
-	loginHandler := web.NewLoginHandler(userService, s.firebaseRest, logger)
+	loginHandler := web.NewLoginHandler(userService, s.firebaseClient, logger)
 	loginHandler.RegisterRoutes(router)
 
 	whereToPlay := web.NewWhereToPlayHandler(logger, poiService, s.storageClient)

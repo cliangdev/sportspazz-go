@@ -11,14 +11,14 @@ import (
 
 type UserService struct {
 	store          *UserStore
-	firebaseClient *auth.Client
+	firebaseAuthClient *auth.Client
 	logger         *slog.Logger
 }
 
-func NewUserService(store *UserStore, firebaseClient *auth.Client, logger *slog.Logger) *UserService {
+func NewUserService(store *UserStore, firebaseAuthClient *auth.Client, logger *slog.Logger) *UserService {
 	return &UserService{
 		store:          store,
-		firebaseClient: firebaseClient,
+		firebaseAuthClient: firebaseAuthClient,
 		logger:         logger,
 	}
 }
@@ -33,7 +33,7 @@ func (u *UserService) RegisterUser(email, password string) (*User, error) {
 		EmailVerified(false).
 		Password(password).
 		Disabled(false)
-	newUser, err := u.firebaseClient.CreateUser(context.Background(), params)
+	newUser, err := u.firebaseAuthClient.CreateUser(context.Background(), params)
 	
 	if err != nil {
 		u.logger.Error("Unable to create user in Firebase", slog.Any("err", err))
