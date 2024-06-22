@@ -11,7 +11,8 @@ type Config struct {
 	Port              string
 	DBUser            string
 	DBPassword        string
-	DBAddress         string
+	DBHost            string
+	DBPort            string
 	DBName            string
 	DBMigrationDir    string
 	FirebaseProjectID string
@@ -30,7 +31,8 @@ func initConfig() Config {
 		Port:              getEnv("PORT", "4001"),
 		DBUser:            getEnv("DB_USER", "user"),
 		DBPassword:        getEnv("DB_PASSWORD", "password"),
-		DBAddress:         getEnv("DB_ADDRESS", "localhost:3309"),
+		DBHost:            getEnv("DB_HOST", "localhost"),
+		DBPort:            getEnv("DB_PORT", "5432"),
 		DBName:            getEnv("DB_NAME", "sports_app"),
 		DBMigrationDir:    getEnv("DB_MIGRATION_DIR", "/db/migrations"),
 		FirebaseProjectID: getEnv("FIREBASE_PROJECT_ID", "firebase"),

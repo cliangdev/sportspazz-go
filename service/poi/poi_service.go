@@ -20,7 +20,7 @@ func (p *PoiService) CreatePoi(createdBy, name, description, address, cityId, we
 
 func (p *PoiService) SearchPois(cityId, sport, cursor string, pageSize int) Pois {
 	internalCursor := p.getInternalCursor(cursor)
-	
+
 	pois := p.store.GetPois(cityId, sport, internalCursor, pageSize+1)
 	nextCursor := ""
 	if len(pois) > pageSize {
