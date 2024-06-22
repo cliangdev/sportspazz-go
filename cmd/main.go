@@ -56,7 +56,11 @@ func main() {
 		logger.Error("error initializing firebase app", slog.Any("err", err))
 		os.Exit(1)
 	}
-	firebaseRest := client.NewFirebaseClient(configs.Envs.FirebaseApiKey, configs.Envs.FirebaseProjectID, logger)
+	firebaseRest, err := client.NewFirebaseClient(configs.Envs.GCPApiKey, logger)
+	if err != nil {
+		logger.Error("error initializing firebase client", slog.Any("err", err))
+		os.Exit(1)
+	}
 	storageClient, err := storage.NewClient(ctx, option.WithCredentialsFile(configs.Envs.GCPApiKey))
 	if err != nil {
 		logger.Error("error initializing cloud storage", slog.Any("err", err))

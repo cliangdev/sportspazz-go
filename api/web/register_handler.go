@@ -46,7 +46,6 @@ func (h *RegisterHandler) submitRegisterHTML(w http.ResponseWriter, r *http.Requ
 	email := r.FormValue("email")
 	password := r.FormValue("password")
 
-	h.logger.Info(fmt.Sprintf("govalidator.IsEmail(email): %v", govalidator.IsEmail(email)))
 	if !govalidator.IsEmail(email) {
 		templates.RegisterError("Invalid email address").Render(r.Context(), w)
 		return
@@ -57,6 +56,7 @@ func (h *RegisterHandler) submitRegisterHTML(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
+	h.logger.Info("Registering new user", slog.Any("email", email))
 	if _, err := h.userService.RegisterUser(email, password); err != nil {
 		templates.RegisterError(err.Error()).Render(r.Context(), w)
 		return
