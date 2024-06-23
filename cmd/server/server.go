@@ -26,6 +26,7 @@ type Server struct {
 	firebaseApp    *firebase.App
 	firebaseClient *client.FirebaseClient
 	storageClient  *storage.Client
+	bucket         string
 }
 
 func NewServer(
@@ -33,7 +34,8 @@ func NewServer(
 	db *gorm.DB,
 	firebaseApp *firebase.App,
 	firebaseClient *client.FirebaseClient,
-	storageClient *storage.Client) *Server {
+	storageClient *storage.Client,
+	bucket string) *Server {
 
 	return &Server{
 		host:           host,
@@ -42,6 +44,7 @@ func NewServer(
 		firebaseApp:    firebaseApp,
 		firebaseClient: firebaseClient,
 		storageClient:  storageClient,
+		bucket:         bucket,
 	}
 }
 
@@ -85,7 +88,7 @@ func (s *Server) Run() error {
 	loginHandler := web.NewLoginHandler(userService, s.firebaseClient, logger)
 	loginHandler.RegisterRoutes(router)
 
-	whereToPlay := web.NewWhereToPlayHandler(logger, poiService, s.storageClient)
+	whereToPlay := web.NewWhereToPlayHandler(logger, poiService, s.storageClient, s.bucket)
 	whereToPlay.RegisterRoutes(router)
 
 	fs := http.FileServer(http.Dir("./public"))

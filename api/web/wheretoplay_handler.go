@@ -27,13 +27,15 @@ type WhereToPlayHandler struct {
 	logger        *slog.Logger
 	poiService    *poi.PoiService
 	storageClient *storage.Client
+	bucket        string
 }
 
-func NewWhereToPlayHandler(logger *slog.Logger, poiService *poi.PoiService, storageClient *storage.Client) *WhereToPlayHandler {
+func NewWhereToPlayHandler(logger *slog.Logger, poiService *poi.PoiService, storageClient *storage.Client, bucket string) *WhereToPlayHandler {
 	return &WhereToPlayHandler{
 		logger:        logger,
 		poiService:    poiService,
 		storageClient: storageClient,
+		bucket:        bucket,
 	}
 }
 
@@ -98,8 +100,7 @@ func (h *WhereToPlayHandler) createNewPlace(w http.ResponseWriter, r *http.Reque
 	defer input.Thumbnail.Close()
 
 	objectName := "poi/thumbnails/" + uuid.New().String() + "/" + input.ThumbnailFilename
-	bucket := "sportspazz-public"
-	wc := h.storageClient.Bucket(bucket).
+	wc := h.storageClient.Bucket(h.bucket).
 		Object(objectName).
 		NewWriter(r.Context())
 	defer wc.Close()
@@ -109,7 +110,7 @@ func (h *WhereToPlayHandler) createNewPlace(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	thumbnailUrl := fmt.Sprintf("https://storage.googleapis.com/%s/%s", bucket, objectName)
+	thumbnailUrl := fmt.Sprintf("https://storage.googleapis.com/%s/%s", h.bucket, objectName)
 
 	createdBy := r.Context().Value(utils.UserIdKey).(string)
 	h.poiService.CreatePoi(

@@ -71,7 +71,15 @@ func main() {
 	signal.Notify(killSig, os.Interrupt, syscall.SIGTERM)
 
 	go func() {
-		server := server.NewServer(configs.Envs.Host, configs.Envs.Port, db, firebaseApp, firebaseRest, storageClient)
+		server := server.NewServer(
+			configs.Envs.Host,
+			configs.Envs.Port,
+			db,
+			firebaseApp,
+			firebaseRest,
+			storageClient,
+			configs.Envs.CloudStorageBucket)
+
 		if err := server.Run(); err != nil {
 			logger.Error("Cannot start server", slog.Any("err", err))
 		}
