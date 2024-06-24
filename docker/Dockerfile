@@ -2,7 +2,9 @@ FROM golang:1.22 as builder
 
 WORKDIR /app
 COPY . .
-RUN CGO_ENABLED=0 go build -o /bin/sportspazz cmd/main.go
+RUN go install github.com/a-h/templ/cmd/templ@latest &&\
+    templ generate &&\
+    CGO_ENABLED=0 go build -o /bin/sportspazz cmd/main.go
 
 FROM alpine:latest as run
 
