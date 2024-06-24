@@ -1,21 +1,48 @@
 version: '3.8'
 
 services:
-  sportspazz_db:
-    image: mysql:8.0
-    cap_add:
-      - SYS_NICE
-    restart: always
+  db:
+    image: postgres:latest
+    container_name: sportspazz_db
     environment:
-      - MYSQL_DATABASE=sports_app
-      - MYSQL_USER=sportspazz
-      - MYSQL_PASSWORD=test
-      - MYSQL_ROOT_PASSWORD=test
+      POSTGRES_USER: sportspazz_user
+      POSTGRES_PASSWORD: sportspazz_password
+      POSTGRES_DB: sports_app
     ports:
-      - '3309:3306'
+      - "5433:5432"
     volumes:
-      - sportspazz_db:/var/lib/mysql
+      - sportspazz_data:/var/lib/postgresql/data
+    networks:
+      - sportspazz_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sportspazz_user -d sports_app -p 5432"]
+      interval: 3s
+      timeout: 5s
+      retries: 5
+
+  sportspazz:
+    image: sportspazz
+    container_name: sportspazz_app
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: sportspazz_user
+      DB_PASSWORD: sportspazz_password
+      DB_NAME: sports_app
+      DB_MIGRATION_DIR: /app/db/migrations
+      GCP_SERVICE_ACCOUNT_API_KEY: /app/configs/everything-sports-staging.json
+    networks:
+      - sportspazz_net
+    volumes:
+      - /Users/cliang/workspace/gcp/everything-sports-staging.json:/app/configs/everything-sports-staging.json
+
+networks:
+  sportspazz_net:
 
 volumes:
-  sportspazz_db:
-    driver: local
+  sportspazz_data:

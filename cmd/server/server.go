@@ -20,7 +20,6 @@ import (
 )
 
 type Server struct {
-	host           string
 	port           string
 	db             *gorm.DB
 	firebaseApp    *firebase.App
@@ -30,7 +29,7 @@ type Server struct {
 }
 
 func NewServer(
-	host, port string,
+	port string,
 	db *gorm.DB,
 	firebaseApp *firebase.App,
 	firebaseClient *client.FirebaseClient,
@@ -38,7 +37,6 @@ func NewServer(
 	bucket string) *Server {
 
 	return &Server{
-		host:           host,
 		port:           port,
 		db:             db,
 		firebaseApp:    firebaseApp,
@@ -91,8 +89,8 @@ func (s *Server) Run() error {
 	whereToPlay := web.NewWhereToPlayHandler(logger, poiService, s.storageClient, s.bucket)
 	whereToPlay.RegisterRoutes(router)
 
-	fs := http.FileServer(http.Dir("./public"))
-	router.PathPrefix("/public/").Handler(http.StripPrefix("/public/", fs))
+	fs := http.FileServer(http.Dir("./static"))
+	router.PathPrefix("/static/").Handler(http.StripPrefix("/static/", fs))
 
 	router.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
 		path, _ := route.GetPathTemplate()
@@ -102,5 +100,5 @@ func (s *Server) Run() error {
 		return nil
 	})
 
-	return http.ListenAndServe(fmt.Sprintf("%s:%s", s.host, s.port), router)
+	return http.ListenAndServe(fmt.Sprintf(":%s", s.port), router)
 }
