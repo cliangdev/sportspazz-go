@@ -7,7 +7,6 @@ import (
 )
 
 type Config struct {
-	Host               string
 	Port               string
 	DBUser             string
 	DBPassword         string
@@ -26,7 +25,6 @@ func initConfig() Config {
 	godotenv.Load()
 
 	return Config{
-		Host:               getEnv("HOST", "localhost"),
 		Port:               getEnv("PORT", "4001"),
 		DBUser:             getEnv("DB_USER", "user"),
 		DBPassword:         getEnv("DB_PASSWORD", "password"),

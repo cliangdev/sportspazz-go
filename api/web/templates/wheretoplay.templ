@@ -69,7 +69,7 @@ templ PoiCardComponent(poi poi.Poi, lastPoi bool, cursor string, sport, cityPlac
                     <img src={ poi.ThumbnailUrl }
                         alt="Place Picture" loading="lazy" class="w-full h-32 object-cover rounded-lg" />
                 } else {
-                    <img src="/public/assets/where_to_play_default_thumbnail.jpg"
+                    <img src="/static/assets/where_to_play_default_thumbnail.jpg"
                         alt="Place Picture" loading="lazy" class="w-full h-32 object-cover rounded-lg" />
                 }
                 <p class="place-name text-lg font-semibold truncate" title={ poi.Name }>{ poi.Name }</p>

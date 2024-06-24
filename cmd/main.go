@@ -38,7 +38,7 @@ func main() {
 		logger.Error("cannot ping database", slog.Any("err", err))
 		os.Exit(1)
 	}
-	logger.Info("Connected to database", slog.String("database", configs.Envs.DBName))
+	logger.Info("connected to database", slog.String("database", configs.Envs.DBName))
 
 	m, err := migrate.New("file://"+configs.Envs.DBMigrationDir, dsn)
 	if err != nil {
@@ -72,7 +72,6 @@ func main() {
 
 	go func() {
 		server := server.NewServer(
-			configs.Envs.Host,
 			configs.Envs.Port,
 			db,
 			firebaseApp,
