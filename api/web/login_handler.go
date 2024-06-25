@@ -57,6 +57,8 @@ func (h *LoginHandler) loginHTML(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	h.logger.Info("User is authenticated", slog.Any("SignInWithPasswordResponse", resp))
+
 	http.SetCookie(w, &http.Cookie{
 		Name:     string(utils.IdTokenKey),
 		Value:    resp.IdToken,

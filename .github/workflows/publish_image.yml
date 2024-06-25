@@ -3,7 +3,7 @@ name: Deploy to staging
 on:
   push:
     branches:
-      - master
+      - login.debug
 
 env:
   GAR_REGION: us-central1
