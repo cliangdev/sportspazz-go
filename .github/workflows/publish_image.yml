@@ -1,0 +1,37 @@
+name: Build and Publish Image to GAR
+
+on:
+  push:
+    branches:
+      - master
+
+env:
+  GAR_REGION: us-central1
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.22
+
+      - name: Login to GAR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.GAR_REGION }}-docker.pkg.dev
+          username: _json_key
+          password: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Build and Push Docker Image
+        run: |
+          docker build -t ${{ env.GAR_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/sportspazz/sportspazz:latest -f docker/Dockerfile .
+          docker push ${{ env.GAR_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/sportspazz/sportspazz:latest
+        env:
+          DOCKER_CLI_EXPERIMENTAL: enabled
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/gcp-key.json
