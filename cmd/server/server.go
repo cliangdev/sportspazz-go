@@ -16,6 +16,7 @@ import (
 	"github.com/sportspazz/middleware"
 	"github.com/sportspazz/service/poi"
 	"github.com/sportspazz/service/user"
+	"github.com/sportspazz/static"
 	"gorm.io/gorm"
 )
 
@@ -89,8 +90,7 @@ func (s *Server) Run() error {
 	whereToPlay := web.NewWhereToPlayHandler(logger, poiService, s.storageClient, s.bucket)
 	whereToPlay.RegisterRoutes(router)
 
-	fs := http.FileServer(http.Dir("./static"))
-	router.PathPrefix("/static/").Handler(http.StripPrefix("/static/", fs))
+	router.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.FS(static.Assets))))
 
 	router.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
 		path, _ := route.GetPathTemplate()

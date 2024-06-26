@@ -129,11 +129,15 @@ func searchAllPlaces(city, sport string, numPages int) ([]POI, error) {
 		if err != nil {
 			break
 		}
+		if placesResponse == nil || placesResponse.Results == nil {
+			fmt.Println("no response")
+			break
+		}
 		allPlaces = append(allPlaces, placesResponse.Results...)
 		nextPageToken = placesResponse.NextPageToken
 
 		if placesResponse.NextPageToken == "" {
-			fmt.Println("No more result")
+			fmt.Println("no next page")
 			break
 		}
 	}
