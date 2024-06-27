@@ -20,22 +20,23 @@ func NewPoiStore(db *gorm.DB, logger *slog.Logger) *PoiStore {
 	}
 }
 
-func (s *PoiStore) CreatePoi(createdBy, name, description, address, cityId, website, sportType, thumbnailUrl, note string) Poi {
+func (s *PoiStore) CreatePoi(createdBy, name, description, address, cityId, googlePlaceId, website, sportType, thumbnailUrl, note string) Poi {
 	now := time.Now().UTC()
 	poi := Poi{
-		ID:           uuid.New().String(),
-		CreatedOn:    now,
-		UpdatedOn:    now,
-		CreatedBy:    createdBy,
-		UpdatedBy:    createdBy,
-		Name:         name,
-		Address:      address,
-		Website:      website,
-		CityId:       cityId,
-		SportType:    sportType,
-		Description:  description,
-		ThumbnailUrl: thumbnailUrl,
-		Note:         note,
+		ID:            uuid.New().String(),
+		CreatedOn:     now,
+		UpdatedOn:     now,
+		CreatedBy:     createdBy,
+		UpdatedBy:     createdBy,
+		Name:          name,
+		Address:       address,
+		Website:       website,
+		CityId:        cityId,
+		GooglePlaceId: googlePlaceId,
+		SportType:     sportType,
+		Description:   description,
+		ThumbnailUrl:  thumbnailUrl,
+		Note:          note,
 	}
 
 	if err := s.db.Create(poi).Error; err != nil {
@@ -70,10 +71,11 @@ func (s *PoiStore) GetLatestPoiInternalId() uint {
 
 func (s *PoiStore) GetPoiByGooglePlaceId(googlePlaceId string) *Poi {
 	var poi Poi
-	s.db.Where("google_place_id = ?", googlePlaceId).
-		Order("internal_id DESC").
-		Limit(1).
-		Find(&poi)
+	result := s.db.First(&poi, "google_place_id = ?", googlePlaceId)
+
+	if result.Error != nil {
+		return nil
+	}
 	return &poi
 }
 

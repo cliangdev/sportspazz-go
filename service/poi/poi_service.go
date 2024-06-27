@@ -16,8 +16,8 @@ func NewPoiService(store *PoiStore, logger *slog.Logger) *PoiService {
 	}
 }
 
-func (p *PoiService) CreatePoi(createdBy, name, description, address, cityId, website, sportType, thumbnailUrl, note string) (Poi, error) {
-	return p.store.CreatePoi(createdBy, name, description, address, cityId, website, sportType, thumbnailUrl, note), nil
+func (p *PoiService) CreatePoi(createdBy, name, description, address, cityId, googlePlaceId, website, sportType, thumbnailUrl, note string) (Poi, error) {
+	return p.store.CreatePoi(createdBy, name, description, address, cityId, googlePlaceId, website, sportType, thumbnailUrl, note), nil
 }
 
 func (p *PoiService) GetPoiByGooglePlaceId(googlePlaceId string) *Poi {
