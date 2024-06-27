@@ -45,10 +45,14 @@ func InvalidJsonResponse(w http.ResponseWriter) {
 }
 
 func ErrorJsonResponse(w http.ResponseWriter, message string) {
-	apiError := NewAPIError(http.StatusBadRequest, message)
+	ErrorJsonResponseWithCode(w, http.StatusBadRequest, message)
+}
+
+func ErrorJsonResponseWithCode(w http.ResponseWriter, status int, message string) {
+	apiError := NewAPIError(status, message)
 
 	w.Header().Set(contentTypeHeader, contentTypeJson)
-	w.WriteHeader(http.StatusBadRequest)
+	w.WriteHeader(status)
 	json.NewEncoder(w).Encode(apiError)
 }
 
