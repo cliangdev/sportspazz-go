@@ -119,6 +119,7 @@ func (h *WhereToPlayHandler) createNewPlace(w http.ResponseWriter, r *http.Reque
 		input.Description,
 		input.Address,
 		input.CityId,
+		"",
 		input.Website,
 		input.Sport,
 		thumbnailUrl,
