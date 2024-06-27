@@ -1,6 +1,8 @@
 package poi
 
-import "log/slog"
+import (
+	"log/slog"
+)
 
 type PoiService struct {
 	store  *PoiStore

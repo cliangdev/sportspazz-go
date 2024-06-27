@@ -1,11 +1,15 @@
 package rest_api
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 
+	"cloud.google.com/go/storage"
 	"github.com/go-playground/validator/v10"
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/sportspazz/api/client"
 	"github.com/sportspazz/middleware"
@@ -16,12 +20,16 @@ import (
 type PoiHandler struct {
 	poiService     *poi.PoiService
 	firebaseClient *client.FirebaseClient
+	cloudStorage   *storage.Client
+	bucket         string
 }
 
-func NewPoiHandler(poiService *poi.PoiService, firebaseClient *client.FirebaseClient) *PoiHandler {
+func NewPoiHandler(poiService *poi.PoiService, firebaseClient *client.FirebaseClient, cloudStorage *storage.Client, bucket string) *PoiHandler {
 	return &PoiHandler{
 		poiService:     poiService,
 		firebaseClient: firebaseClient,
+		cloudStorage:   cloudStorage,
+		bucket:         bucket,
 	}
 }
 
@@ -45,6 +53,27 @@ func (p *PoiHandler) createPoi(w http.ResponseWriter, r *http.Request) {
 		ErrorJsonResponseWithCode(w, http.StatusConflict,
 			fmt.Sprintf("Place with google place id %s already exists", poiRequest.GooglePlaceId))
 		return
+	}
+
+	if poiRequest.ThumbnailUrl != "" {
+		resp, err := http.Get(poiRequest.ThumbnailUrl)
+		if err != nil || resp.StatusCode != http.StatusOK {
+			ErrorJsonResponse(w, "cannot download image "+poiRequest.ThumbnailUrl)
+			return
+		}
+		defer resp.Body.Close()
+
+		objectName := "poi/thumbnails/" + uuid.New().String() + "/" + poiRequest.Name
+		wc := p.cloudStorage.Bucket(p.bucket).
+			Object(objectName).
+			NewWriter(context.Background())
+		defer wc.Close()
+
+		if _, err := io.Copy(wc, resp.Body); err != nil {
+			ErrorJsonResponse(w, "cannot download image "+poiRequest.ThumbnailUrl)
+			return
+		}
+		poiRequest.ThumbnailUrl = fmt.Sprintf("https://storage.googleapis.com/%s/%s", p.bucket, objectName)
 	}
 
 	createdBy := r.Context().Value(utils.UserIdKey).(string)

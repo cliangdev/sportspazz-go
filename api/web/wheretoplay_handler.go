@@ -24,18 +24,18 @@ const pageSizeParam = "pageSize"
 const cursorParam = "cursor"
 
 type WhereToPlayHandler struct {
-	logger        *slog.Logger
-	poiService    *poi.PoiService
-	storageClient *storage.Client
-	bucket        string
+	logger       *slog.Logger
+	poiService   *poi.PoiService
+	cloudStorage *storage.Client
+	bucket       string
 }
 
-func NewWhereToPlayHandler(logger *slog.Logger, poiService *poi.PoiService, storageClient *storage.Client, bucket string) *WhereToPlayHandler {
+func NewWhereToPlayHandler(logger *slog.Logger, poiService *poi.PoiService, cloudStorage *storage.Client, bucket string) *WhereToPlayHandler {
 	return &WhereToPlayHandler{
-		logger:        logger,
-		poiService:    poiService,
-		storageClient: storageClient,
-		bucket:        bucket,
+		logger:       logger,
+		poiService:   poiService,
+		cloudStorage: cloudStorage,
+		bucket:       bucket,
 	}
 }
 
@@ -100,7 +100,7 @@ func (h *WhereToPlayHandler) createNewPlace(w http.ResponseWriter, r *http.Reque
 	defer input.Thumbnail.Close()
 
 	objectName := "poi/thumbnails/" + uuid.New().String() + "/" + input.ThumbnailFilename
-	wc := h.storageClient.Bucket(h.bucket).
+	wc := h.cloudStorage.Bucket(h.bucket).
 		Object(objectName).
 		NewWriter(r.Context())
 	defer wc.Close()

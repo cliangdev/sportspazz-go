@@ -74,7 +74,7 @@ func (s *Server) Run() error {
 
 	poiStore := poi.NewPoiStore(s.db, logger)
 	poiService := poi.NewPoiService(poiStore, logger)
-	poiHandler := rest_api.NewPoiHandler(poiService, s.firebaseClient)
+	poiHandler := rest_api.NewPoiHandler(poiService, s.firebaseClient, s.storageClient, s.bucket)
 	poiHandler.RegisterRoutes(subRouter)
 
 	// HTML handler
