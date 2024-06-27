@@ -68,6 +68,15 @@ func (s *PoiStore) GetLatestPoiInternalId() uint {
 	return internalId
 }
 
+func (s *PoiStore) GetPoiByGooglePlaceId(googlePlaceId string) *Poi {
+	var poi Poi
+	s.db.Where("google_place_id = ?", googlePlaceId).
+		Order("internal_id DESC").
+		Limit(1).
+		Find(&poi)
+	return &poi
+}
+
 func (s *PoiStore) GetPois(cityId, sport string, cursor uint, pageSize int) []Poi {
 	var pois []Poi
 	s.db.Where("city_id = ? AND sport_type = ? AND internal_id <= ?",

@@ -2,6 +2,7 @@ package rest_api
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/go-playground/validator/v10"
@@ -37,6 +38,12 @@ func (p *PoiHandler) createPoi(w http.ResponseWriter, r *http.Request) {
 
 	if err := validCreatePoiRequest(poiRequest); err != nil {
 		ErrorJsonResponse(w, err.Error())
+		return
+	}
+
+	if poiRequest.GooglePlaceId != "" && p.poiService.GetPoiByGooglePlaceId(poiRequest.GooglePlaceId) != nil {
+		ErrorJsonResponseWithCode(w, http.StatusConflict,
+			fmt.Sprintf("Place with google place id %s already exists", poiRequest.GooglePlaceId))
 		return
 	}
 

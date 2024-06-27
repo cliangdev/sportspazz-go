@@ -1,14 +1,15 @@
 package rest_api
 
 type CreatePoiRequest struct {
-	Name         string `json:"name" validate:"required,min=3,max=200"`
-	Address      string `json:"address"`
-	Website      string `json:"website"`
-	CityId       string `json:"city_id" validate:"required,min=2,max=255"`
-	SportType    string `json:"sport_type" validate:"required,min=2,max=50"`
-	ThumbnailUrl string `json:"thumbnail_url"`
-	Description  string `json:"description"`
-	Note         string `json:"note"`
+	Name          string `json:"name" validate:"required,min=3,max=200"`
+	Address       string `json:"address"`
+	Website       string `json:"website"`
+	CityId        string `json:"city_id" validate:"required,min=2,max=255"`
+	GooglePlaceId string `json:"google_place_id"`
+	SportType     string `json:"sport_type" validate:"required,min=2,max=50"`
+	ThumbnailUrl  string `json:"thumbnail_url"`
+	Description   string `json:"description"`
+	Note          string `json:"note"`
 }
 
 type PoiResponse struct {

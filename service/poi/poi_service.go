@@ -18,6 +18,10 @@ func (p *PoiService) CreatePoi(createdBy, name, description, address, cityId, we
 	return p.store.CreatePoi(createdBy, name, description, address, cityId, website, sportType, thumbnailUrl, note), nil
 }
 
+func (p *PoiService) GetPoiByGooglePlaceId(googlePlaceId string) *Poi {
+	return p.store.GetPoiByGooglePlaceId(googlePlaceId)
+}
+
 func (p *PoiService) SearchPois(cityId, sport, cursor string, pageSize int) Pois {
 	internalCursor := p.getInternalCursor(cursor)
 
