@@ -4,7 +4,7 @@ go 1.22.2
 
 require (
 	cloud.google.com/go/storage v1.41.0
-	github.com/a-h/templ v0.2.680
+	github.com/a-h/templ v0.2.731
 	google.golang.org/api v0.178.0
 )
 
