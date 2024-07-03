@@ -24,6 +24,11 @@ func (p *PoiService) GetPoiByGooglePlaceId(googlePlaceId string) *Poi {
 	return p.store.GetPoiByGooglePlaceId(googlePlaceId)
 }
 
+func (p *PoiService) GetPoiById(id string) *Poi {
+	return p.store.GetPoiById(id)
+}
+
+
 func (p *PoiService) SearchPois(cityId, sport, cursor string, pageSize int) Pois {
 	internalCursor := p.getInternalCursor(cursor)
 

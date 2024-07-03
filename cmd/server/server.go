@@ -21,12 +21,13 @@ import (
 )
 
 type Server struct {
-	port           string
-	db             *gorm.DB
-	firebaseApp    *firebase.App
-	firebaseClient *client.FirebaseClient
-	storageClient  *storage.Client
-	bucket         string
+	port            string
+	db              *gorm.DB
+	firebaseApp     *firebase.App
+	firebaseClient  *client.FirebaseClient
+	storageClient   *storage.Client
+	bucket          string
+	googleMapApiKey string
 }
 
 func NewServer(
@@ -35,15 +36,17 @@ func NewServer(
 	firebaseApp *firebase.App,
 	firebaseClient *client.FirebaseClient,
 	storageClient *storage.Client,
-	bucket string) *Server {
+	bucket string,
+	googleMapApiKey string) *Server {
 
 	return &Server{
-		port:           port,
-		db:             db,
-		firebaseApp:    firebaseApp,
-		firebaseClient: firebaseClient,
-		storageClient:  storageClient,
-		bucket:         bucket,
+		port:            port,
+		db:              db,
+		firebaseApp:     firebaseApp,
+		firebaseClient:  firebaseClient,
+		storageClient:   storageClient,
+		bucket:          bucket,
+		googleMapApiKey: googleMapApiKey,
 	}
 }
 
@@ -87,7 +90,7 @@ func (s *Server) Run() error {
 	loginHandler := web.NewLoginHandler(userService, s.firebaseClient, logger)
 	loginHandler.RegisterRoutes(router)
 
-	whereToPlay := web.NewWhereToPlayHandler(logger, poiService, s.storageClient, s.bucket)
+	whereToPlay := web.NewWhereToPlayHandler(logger, poiService, s.storageClient, s.bucket, s.googleMapApiKey)
 	whereToPlay.RegisterRoutes(router)
 
 	router.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.FS(static.Assets))))
