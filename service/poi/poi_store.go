@@ -79,6 +79,16 @@ func (s *PoiStore) GetPoiByGooglePlaceId(googlePlaceId string) *Poi {
 	return &poi
 }
 
+func (s *PoiStore) GetPoiById(id string) *Poi {
+	var poi Poi
+	result := s.db.First(&poi, "id = ?", id)
+
+	if result.Error != nil {
+		return nil
+	}
+	return &poi
+}
+
 func (s *PoiStore) GetPois(cityId, sport string, cursor uint, pageSize int) []Poi {
 	var pois []Poi
 	s.db.Where("city_id = ? AND sport_type = ? AND internal_id <= ?",

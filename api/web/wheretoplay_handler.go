@@ -1,6 +1,7 @@
 package web
 
 import (
+	"encoding/json"
 	"io"
 	"log/slog"
 	"net/http"
@@ -12,6 +13,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/sportspazz/api/web/templates"
+	"github.com/sportspazz/api/web/types"
 	"github.com/sportspazz/service/poi"
 	"github.com/sportspazz/utils"
 )
@@ -24,18 +26,20 @@ const pageSizeParam = "pageSize"
 const cursorParam = "cursor"
 
 type WhereToPlayHandler struct {
-	logger       *slog.Logger
-	poiService   *poi.PoiService
-	cloudStorage *storage.Client
-	bucket       string
+	logger          *slog.Logger
+	poiService      *poi.PoiService
+	cloudStorage    *storage.Client
+	bucket          string
+	googleMapApiKey string
 }
 
-func NewWhereToPlayHandler(logger *slog.Logger, poiService *poi.PoiService, cloudStorage *storage.Client, bucket string) *WhereToPlayHandler {
+func NewWhereToPlayHandler(logger *slog.Logger, poiService *poi.PoiService, cloudStorage *storage.Client, bucket, googleMapApiKey string) *WhereToPlayHandler {
 	return &WhereToPlayHandler{
-		logger:       logger,
-		poiService:   poiService,
-		cloudStorage: cloudStorage,
-		bucket:       bucket,
+		logger:          logger,
+		poiService:      poiService,
+		cloudStorage:    cloudStorage,
+		bucket:          bucket,
+		googleMapApiKey: googleMapApiKey,
 	}
 }
 
@@ -44,6 +48,63 @@ func (h *WhereToPlayHandler) RegisterRoutes(router *mux.Router) {
 	router.HandleFunc("/wheretoplay/search", h.searchWhereToPlay).Methods(http.MethodGet)
 	router.HandleFunc("/wheretoplay/new", h.serveCreateNewPlacePageHTML).Methods(http.MethodGet)
 	router.HandleFunc("/wheretoplay/new", h.createNewPlace).Methods(http.MethodPost)
+	router.HandleFunc("/wheretoplay/{sport}/{placeId}", h.placeDetails).Methods(http.MethodGet)
+}
+
+func (h *WhereToPlayHandler) placeDetails(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	placeId := vars["placeId"]
+
+	poi := h.poiService.GetPoiById(placeId)
+	if poi == nil {
+		content := templates.NotFoundMessage()
+		err := templates.Layout(content).Render(r.Context(), w)
+
+		if err != nil {
+			http.Error(w, "Error rendering page", http.StatusInternalServerError)
+		}
+		return
+	}
+	if poi.GooglePlaceId != "" {
+		if details, err := getGooglePlaceDetails(poi.GooglePlaceId, h.googleMapApiKey); err == nil && details.Status == "OK" {
+			w.WriteHeader(http.StatusOK)
+
+			content := templates.PlaceDetais(details.Result)
+			err := templates.MapLayout(content).Render(r.Context(), w)
+
+			if err != nil {
+				http.Error(w, "Error rendering page", http.StatusInternalServerError)
+			}
+			return
+		}
+	}
+}
+
+func getGooglePlaceDetails(googlePlaceId, apiKey string) (*types.GooglePlaceResponse, error) {
+	url := fmt.Sprintf("https://maps.googleapis.com/maps/api/place/details/json?place_id=%s&key=%s&fields=current_opening_hours,formatted_address,formatted_phone_number,name,opening_hours,photos,rating,website",
+		googlePlaceId, apiKey)
+
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var response types.GooglePlaceResponse
+	if err := json.Unmarshal(body, &response); err != nil {
+		return nil, err
+	}
+
+	return &response, nil
 }
 
 func (h *WhereToPlayHandler) serveWhereToPlayPageHTML(w http.ResponseWriter, r *http.Request) {

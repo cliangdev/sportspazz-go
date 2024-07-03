@@ -77,7 +77,8 @@ func main() {
 			firebaseApp,
 			firebaseRest,
 			storageClient,
-			configs.Envs.CloudStorageBucket)
+			configs.Envs.CloudStorageBucket,
+			configs.Envs.GoogleMapApiKey)
 
 		if err := server.Run(); err != nil {
 			logger.Error("Cannot start server", slog.Any("err", err))

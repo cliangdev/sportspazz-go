@@ -63,43 +63,45 @@ templ SearchResult(pois poi.Pois, sport, cityPlaceId string, pageSize int) {
 
 templ PoiCardComponent(poi poi.Poi, lastPoi bool, cursor string, sport, cityPlaceId string, pageSize int) {
     <div class="poi-item bg-white p-4 rounded-lg shadow">
-        <div class="flex items-center space-x-4">
-            <div class="place-info w-full max-w-md">
-                if poi.ThumbnailUrl != "" {
-                    <img src={ poi.ThumbnailUrl }
-                        alt="Place Picture" loading="lazy" class="w-full h-32 object-cover rounded-lg" />
-                } else {
-                    <img src="/static/assets/where_to_play_default_thumbnail.jpg"
-                        alt="Place Picture" loading="lazy" class="w-full h-32 object-cover rounded-lg" />
-                }
-                <p class="place-name text-lg font-semibold truncate" title={ poi.Name }>{ poi.Name }</p>
-                <p class="sport-type text-sm font-semibold text-gray-500">{ poi.SportType }</p>
-                <p>
-                    <a href={ templ.SafeURL("https://www.google.com/maps/search/?api=1&query=" + url.QueryEscape(poi.Address)) }
-                        target="_blank"
-                        class="relative text-xs text-blue-400 hover:text-blue-800 group">
-                        { poi.Address }
-                    </a>
-                </p>
-                if poi.Website != "" {
-                   <p>
-                        <a href={ templ.SafeURL(poi.Website) }
+        <a href={ templ.SafeURL("/wheretoplay/" + poi.SportType + "/" + poi.ID) } class="block">
+            <div class="flex items-center space-x-4">
+                <div class="place-info w-full max-w-md">
+                    if poi.ThumbnailUrl != "" {
+                        <img src={ poi.ThumbnailUrl }
+                            alt="Place Picture" loading="lazy" class="w-full h-32 object-cover rounded-lg" />
+                    } else {
+                        <img src="/static/assets/where_to_play_default_thumbnail.jpg"
+                            alt="Place Picture" loading="lazy" class="w-full h-32 object-cover rounded-lg" />
+                    }
+                    <p class="place-name text-lg font-semibold truncate" title={ poi.Name }>{ poi.Name }</p>
+                    <p class="sport-type text-sm font-semibold text-gray-500">{ poi.SportType }</p>
+                    <p>
+                        <a href={ templ.SafeURL("https://www.google.com/maps/search/?api=1&query=" + url.QueryEscape(poi.Address)) }
                             target="_blank"
                             class="relative text-xs text-blue-400 hover:text-blue-800 group">
-                            { poi.Website }
+                            { poi.Address }
                         </a>
-                    </p> 
-                }
-                <p class="place-description text-sm text-gray-600 max-h-36 overflow-hidden">{ poi.Description }</p>
+                    </p>
+                    if poi.Website != "" {
+                    <p>
+                            <a href={ templ.SafeURL(poi.Website) }
+                                target="_blank"
+                                class="relative text-xs text-blue-400 hover:text-blue-800 group">
+                                { poi.Website }
+                            </a>
+                        </p> 
+                    }
+                    <p class="place-description text-sm text-gray-600 max-h-36 overflow-hidden">{ poi.Description }</p>
+                </div>
             </div>
-        </div>
-        if lastPoi && cursor != "" {
-            <div hx-trigger="revealed" 
-                hx-get={ fmt.Sprintf("/wheretoplay/search?sport=%s&cityPlaceId=%s&pageSize=%d&cursor=%s", sport, cityPlaceId, pageSize, cursor)} 
-                hx-swap="beforeend"
-                hx-indicator="#spinner"
-                hx-target="#search-result"></div>
-        }
+            if lastPoi && cursor != "" {
+                <div hx-trigger="revealed" 
+                    hx-get={ fmt.Sprintf("/wheretoplay/search?sport=%s&cityPlaceId=%s&pageSize=%d&cursor=%s", sport, cityPlaceId, pageSize, cursor)} 
+                    hx-swap="beforeend"
+                    hx-indicator="#spinner"
+                    hx-target="#search-result"></div>
+            }
+        </a>
     </div>
 }
 
