@@ -52,11 +52,14 @@ jobs:
       - name: Set up Google Cloud SDK
         uses: 'google-github-actions/setup-gcloud@v2'
 
-      - name: Copy Service Account Key to GCE VM
+      - name: Copy Config Files to GCE VM
         run: |
           echo '${{ secrets.GCP_SA_KEY }}' > service_account.json
+          echo '${{ secrets.SERVER_CRT }}' > server.crt
+          echo '${{ secrets.SERVER_KEY }}' > server.key
           gcloud compute scp service_account.json ${{ secrets.VM_INSTANCE_NAME }}:/home/$USER/service_account.json --zone=${{ env.VM_ZONE }}
-
+          gcloud compute scp server.crt ${{ secrets.VM_INSTANCE_NAME }}:/home/$USER/server.crt --zone=${{ env.VM_ZONE }}
+          gcloud compute scp server.key ${{ secrets.VM_INSTANCE_NAME }}:/home/$USER/server.key --zone=${{ env.VM_ZONE }}
       - name: Deploy to GCE VM
         run: | 
           gcloud compute ssh ${{ secrets.VM_INSTANCE_NAME }} --zone=${{ env.VM_ZONE }} --command "
@@ -75,7 +78,7 @@ jobs:
             # Run the Docker container
             docker run --name ${{ env.CONTAINER_NAME }} \
               --network sportspazz-network \
-              -p 80:8080 \
+              -p 443:8080 \
               -e DB_HOST=${{ secrets.DB_HOST}} \
               -e DB_PORT=5432 \
               -e DB_USER=${{ secrets.DB_USER}} \
@@ -85,7 +88,11 @@ jobs:
               -e GOOGLE_MAP_API_KEY=${{ secrets.GOOGLE_MAP_API_KEY }} \
               -e CLOUD_STORAGE_BUCKET=${{ vars.CLOUD_STORAGE_BUCKET }} \
               -e GCP_SERVICE_ACCOUNT_API_KEY=/app/configs/service_account.json \
+              -e CERT_FILE=/app/configs/server.crt \
+              -e KEY_FILE=/app/configs/server.key \
               -v /home/runner/service_account.json:/app/configs/service_account.json \
+              -v /home/runner/server.crt:/app/configs/server.crt \
+              -v /home/runner/server.key:/app/configs/server.key \
               -d ${{ env.GAR_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/sportspazz/sportspazz:latest
 
             # Verify the Docker container
