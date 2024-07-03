@@ -76,11 +76,10 @@ func (h *WhereToPlayHandler) placeDetails(w http.ResponseWriter, r *http.Request
 				http.Error(w, "Error rendering page", http.StatusInternalServerError)
 			}
 			return
-		} else {
-			h.logger.Info("No google place id, rendering nothing for now")
-			templates.Layout(templates.NotFoundMessage()).Render(r.Context(), w)
 		}
 	}
+	h.logger.Info("No google place id, rendering nothing for now")
+	templates.Layout(templates.NotFoundMessage()).Render(r.Context(), w)
 }
 
 func getGooglePlaceDetails(googlePlaceId, apiKey string) (*types.GooglePlaceResponse, error) {
