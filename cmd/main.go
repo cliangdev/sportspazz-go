@@ -72,13 +72,11 @@ func main() {
 
 	go func() {
 		server := server.NewServer(
-			configs.Envs.Port,
 			db,
 			firebaseApp,
 			firebaseRest,
 			storageClient,
-			configs.Envs.CloudStorageBucket,
-			configs.Envs.GoogleMapApiKey)
+			configs.Envs)
 
 		if err := server.Run(); err != nil {
 			logger.Error("Cannot start server", slog.Any("err", err))

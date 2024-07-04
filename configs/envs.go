@@ -17,6 +17,8 @@ type Config struct {
 	GoogleMapApiKey    string
 	GCPApiKey          string
 	CloudStorageBucket string
+	CertFile           string
+	KeyFile            string
 }
 
 var Envs = initConfig()
@@ -35,6 +37,8 @@ func initConfig() Config {
 		GoogleMapApiKey:    getEnv("GOOGLE_MAP_API_KEY", "apiKey"),
 		GCPApiKey:          getEnv("GCP_SERVICE_ACCOUNT_API_KEY", "apiKey"),
 		CloudStorageBucket: getEnv("CLOUD_STORAGE_BUCKET", "sportspazz"),
+		CertFile:           getEnv("CERT_FILE", ""),
+		KeyFile:            getEnv("KEY_FILE", ""),
 	}
 }
 

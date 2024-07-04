@@ -13,6 +13,7 @@ import (
 	"github.com/sportspazz/api/client"
 	rest_api "github.com/sportspazz/api/rest"
 	web "github.com/sportspazz/api/web"
+	"github.com/sportspazz/configs"
 	"github.com/sportspazz/middleware"
 	"github.com/sportspazz/service/poi"
 	"github.com/sportspazz/service/user"
@@ -28,25 +29,27 @@ type Server struct {
 	storageClient   *storage.Client
 	bucket          string
 	googleMapApiKey string
+	certFile        string
+	keyFile         string
 }
 
 func NewServer(
-	port string,
 	db *gorm.DB,
 	firebaseApp *firebase.App,
 	firebaseClient *client.FirebaseClient,
 	storageClient *storage.Client,
-	bucket string,
-	googleMapApiKey string) *Server {
+	configs configs.Config) *Server {
 
 	return &Server{
-		port:            port,
+		port:            configs.Port,
 		db:              db,
 		firebaseApp:     firebaseApp,
 		firebaseClient:  firebaseClient,
 		storageClient:   storageClient,
-		bucket:          bucket,
-		googleMapApiKey: googleMapApiKey,
+		bucket:          configs.CloudStorageBucket,
+		googleMapApiKey: configs.GoogleMapApiKey,
+		certFile:        configs.CertFile,
+		keyFile:         configs.KeyFile,
 	}
 }
 
@@ -103,5 +106,11 @@ func (s *Server) Run() error {
 		return nil
 	})
 
-	return http.ListenAndServe(fmt.Sprintf(":%s", s.port), router)
+	if s.certFile != "" && s.keyFile != "" {
+		logger.Info("expecting https connections...")
+		return http.ListenAndServeTLS(fmt.Sprintf(":%s", s.port), s.certFile, s.keyFile, router)
+	} else {
+		logger.Info("expecting http connections...")
+		return http.ListenAndServe(fmt.Sprintf(":%s", s.port), router)
+	}
 }
