@@ -2,11 +2,15 @@ package cli
 
 import (
 	"bytes"
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
+	"os"
 
 	"github.com/spf13/cobra"
 )
@@ -17,20 +21,23 @@ var sportspazzToken string
 var city string
 var sport string
 var pages int
+var certFile string
 
 var preSeedPoiCmd = &cobra.Command{
-	Use:   "seed-poi --api-key <api_key> --city <city>  --sport <sport>  --pages <number_pages>  --sportspazz-host <sportspazz_host> --sportspazz-token <request_token>",
+	Use:   "seed-poi --api-key <api_key> --city <city>  --sport <sport>  --pages <number_pages>  --sportspazz-host <sportspazz_host> --sportspazz-token <request_token> --cert <cert_file>",
 	Short: "Pre-seed point of interest data to sportspazz.com",
 	Args:  cobra.ExactArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
-		if pois, err := searchAllPlaces(city, sport, pages); err != nil {
-			for _, poi := range pois {
-				fmt.Printf("Creating POI: %s", poi.Name)
+		pois, err := searchAllPlaces(city, sport, pages)
+		if err != nil {
+			log.Fatal(err)
+		}
+		for _, poi := range pois {
+			fmt.Printf("Creating POI: %s", poi.Name)
 
-				if err := createPOI(poi); err != nil {
-					fmt.Printf("%v", err)
-					break
-				}
+			if err := createPOI(poi); err != nil {
+				fmt.Printf("%v", err)
+				break
 			}
 		}
 	},
@@ -53,6 +60,7 @@ func init() {
 	preSeedPoiCmd.MarkFlagRequired("sport")
 
 	preSeedPoiCmd.Flags().IntVar(&pages, "pages", 10, "Page size")
+	preSeedPoiCmd.Flags().StringVar(&certFile, "cert", "", "Crt file path")
 }
 
 func searchPlaces(city, sport, nextPageToken string) (*PlacesResponse, error) {
@@ -167,6 +175,7 @@ func searchAllPlaces(city, sport string, numPages int) ([]POI, error) {
 			Name:         place.Name,
 			Address:      place.Address,
 			CityID:       cityPlaceId,
+			GooglePlaceId: placeDetails.PlaceID,
 			SportType:    sport,
 			ThumbnailURL: thumbnailURL,
 			Description:  description,
@@ -258,7 +267,24 @@ func createPOI(poi POI) error {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+sportspazzToken)
 
-	client := &http.Client{}
+	var client *http.Client
+	if certFile != "" {
+		certPool := x509.NewCertPool()
+		cert, err := os.ReadFile(certFile)
+		if err != nil {
+			log.Fatal(err)
+		}
+		certPool.AppendCertsFromPEM(cert)
+		client = &http.Client{
+			Transport: &http.Transport{
+				TLSClientConfig: &tls.Config{
+					RootCAs: certPool,
+				},
+			},
+		}
+	} else {
+		client = &http.Client{}
+	}
 
 	resp, err := client.Do(req)
 	if err != nil {

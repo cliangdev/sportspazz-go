@@ -27,3 +27,6 @@ api/web/templates/*_templ.txt
 
 # Ignore other files
 .env
+
+# Ignore local testing script
+scripts/seed_poi.sh

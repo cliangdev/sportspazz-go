@@ -1,7 +1,7 @@
 package cli
 
 type PlacesResponse struct {
-	NextPageToken string `json:"next_page_token"`
+	NextPageToken string  `json:"next_page_token"`
 	Results       []Place `json:"results"`
 }
 
@@ -99,10 +99,11 @@ type Review struct {
 }
 
 type POI struct {
-    Name          string `json:"name"`
-    Address       string `json:"address"`
-    CityID        string `json:"city_id"`
-    SportType     string `json:"sport_type"`
-    ThumbnailURL  string `json:"thumbnail_url"`
-    Description   string `json:"description"`
+	Name          string `json:"name"`
+	Address       string `json:"address"`
+	CityID        string `json:"city_id"`
+	GooglePlaceId string `json:"google_place_id"`
+	SportType     string `json:"sport_type"`
+	ThumbnailURL  string `json:"thumbnail_url"`
+	Description   string `json:"description"`
 }
