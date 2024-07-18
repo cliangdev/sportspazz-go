@@ -66,7 +66,8 @@ func (h *WhereToPlayHandler) placeDetails(w http.ResponseWriter, r *http.Request
 		return
 	}
 	if poi.GooglePlaceId != "" {
-		if details, err := getGooglePlaceDetails(poi.GooglePlaceId, h.googleMapApiKey); err == nil && details.Status == "OK" {
+		details, err := getGooglePlaceDetails(poi.GooglePlaceId, h.googleMapApiKey)
+		if err == nil && details.Status == "OK" {
 			w.WriteHeader(http.StatusOK)
 
 			content := templates.PlaceDetais(details.Result)
@@ -77,8 +78,10 @@ func (h *WhereToPlayHandler) placeDetails(w http.ResponseWriter, r *http.Request
 			}
 			return
 		}
+		if err != nil {
+			h.logger.Error("Cannot get place details from google api", slog.Any("err", err), slog.Any("details", details))
+		}
 	}
-	h.logger.Info("No google place id, rendering nothing for now")
 	templates.Layout(templates.NotFoundMessage()).Render(r.Context(), w)
 }
 

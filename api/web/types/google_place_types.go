@@ -11,7 +11,7 @@ type Result struct {
 	Name                 string       `json:"name"`
 	OpeningHours         OpeningHours `json:"opening_hours"`
 	Photos               []Photo      `json:"photos"`
-	Rating               int          `json:"rating"`
+	Rating               float32      `json:"rating"`
 	Website              string       `json:"website"`
 }
 
