@@ -11,27 +11,37 @@ templ PlaceDetais(details types.Result) {
         <div class="bg-white shadow-lg rounded-lg p-6 max-w-md w-full">
             <h1 class="text-2xl font-bold">{ details.Name }</h1>
             <div class="my-4">
-                @renderRating(details.Rating)
+               @renderRating(getStarts(details.Rating))
             </div>
-            <div class="space-y-2 mb-2">
-                <p class="text-base text-gray-600">
+            <div class="space-y-2">
+                <div class="flex items-center space-x-2 text-gray-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.588 13.763C18.476 11.658 20 9.21 20 6.5 20 3.462 17.538 1 14.5 1 12.36 1 10.458 2.344 10 4.183 9.542 2.344 7.64 1 5.5 1 2.462 1 0 3.462 0 6.5c0 2.71 1.524 5.158 3.412 7.263C5.844 16.322 8 19.5 8 23h8c0-3.5 2.156-6.678 3.588-9.237z"/>
+                    </svg>
                     <a href={ googleMapUrl(details.FormattedAddress) } target="_blank" class="text-blue-500 hover:underline">
                         { details.FormattedAddress }
                     </a>
-                </p>
-                if details.FormattedAddress != "" {
-                    <p class="text-base text-gray-600">
+                </div>
+                if details.FormattedPhoneNumber != "" {
+                    <div class="flex items-center space-x-2 text-gray-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 8a4 4 0 014-4h10a4 4 0 014 4v10a4 4 0 01-4 4H7a4 4 0 01-4-4V8z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M16 2v4M8 2v4M3 10h18" />
+                        </svg>
                         <a href="tel:+02093744000" class="text-blue-500 hover:underline">
                             { details.FormattedPhoneNumber }
                         </a>
-                    </p>
+                    </div>
                 }
                 if details.Website != "" {
-                    <p class="text-base text-gray-600">
-                        <a href="http://google.com/" target="_blank" class="text-blue-500 hover:underline">
-                            { details.Website }
+                    <div class="flex items-center space-x-2 text-gray-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 12m0 0a6 6 0 100-12 6 6 0 000 12zm0 0v6m0 0H9m3 0h3"/>
+                        </svg>
+                        <a href={ templ.SafeURL(details.Website) } target="_blank" class="text-blue-500 hover:underline">
+                        Website
                         </a>
-                    </p>
+                    </div>
                 }
             </div>
             if details.OpeningHours.WeekdayText != nil {
@@ -78,19 +88,37 @@ templ PlaceDetais(details types.Result) {
     </script>
 }
 
-templ renderRating(rating int) {
+templ renderRating(fullStars int, halfStar bool, emptyStars int) {
     <div class="flex items-center">
-        for i := 1; i <= rating; i++ {
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-500 fill-current" viewBox="0 0 24 24">
-                <path d="M12 2l2.4 7.4H22l-6 4.6 2.4 7.4-6.4-4.6-6.4 4.6 2.4-7.4-6-4.6h7.6z"/>
+        for i := 0; i < fullStars; i++ {
+            <svg class="w-6 h-6 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9.049.927l2.337 6.046h6.358c.464 0 .657.57.276.864l-5.067 3.678 2.337 6.046c.183.474-.392.874-.793.582L10 15.126 5.893 18.143c-.4.291-.975-.108-.793-.582l2.337-6.046-5.067-3.678c-.38-.294-.188-.864.276-.864h6.358L9.049.927c.183-.474.831-.474 1.015 0z"></path>
             </svg>
         }
-        for i := rating + 1; i <= 5; i++ {
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-300 fill-current" viewBox="0 0 24 24">
-                <path d="M12 2l2.4 7.4H22l-6 4.6 2.4 7.4-6.4-4.6-6.4 4.6 2.4-7.4-6-4.6h7.6z"/>
+
+        if halfStar {
+            <svg class="w-6 h-6 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M10 15.27L16.18 18l-1.64-7.03L18 7.24l-7.19-.61L10 0 8.19 6.63 1 7.24l5.46 3.73L4.82 18zM10 12.4V3.6L12.42 8.24l4.58.38-3.32 2.5L15.6 15.4z"></path>
+            </svg>
+        }
+
+        for i := 0; i < emptyStars; i++ {
+            <svg class="w-6 h-6 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9.049.927l2.337 6.046h6.358c.464 0 .657.57.276.864l-5.067 3.678 2.337 6.046c.183.474-.392.874-.793.582L10 15.126 5.893 18.143c-.4.291-.975-.108-.793-.582l2.337-6.046-5.067-3.678c-.38-.294-.188-.864.276-.864h6.358L9.049.927c.183-.474.831-.474 1.015 0z"></path>
             </svg>
         }
     </div>
+}
+
+func getStarts(rating float32) (int, bool, int) {
+    fullStars := int(rating)
+    halfStar := (rating - float32(fullStars)) >= 0.5
+    emptyStars := 5 - fullStars
+    if halfStar {
+        emptyStars -= 1
+    }
+
+    return fullStars, halfStar, emptyStars
 }
 
 func googleMapUrl(address string) templ.SafeURL {
