@@ -42,7 +42,7 @@ templ WhereToPlayPage() {
             <div class="flex justify-end mt-1">
                 <a href="/wheretoplay/new" class="text-sm text-indigo-600 hover:text-indigo-800">Create a new place</a>
             </div>
-            <div class="container mx-auto p-6">
+            <div class="container">
                 <div id="search-result" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
                 <center>
                     <div id="spinner" class="htmx-indicator m-8">
@@ -64,7 +64,7 @@ templ SearchResult(pois poi.Pois, sport, cityPlaceId string, pageSize int) {
 templ PoiCardComponent(poi poi.Poi, lastPoi bool, cursor string, sport, cityPlaceId string, pageSize int) {
     <div class="poi-item bg-white p-4 rounded-lg shadow">
         <a href={ templ.SafeURL("/wheretoplay/" + poi.SportType + "/" + poi.ID) } class="block">
-            <div class="flex items-center space-x-4">
+            <div class="flex items-center">
                 <div class="place-info w-full max-w-md">
                     if poi.ThumbnailUrl != "" {
                         <img src={ poi.ThumbnailUrl }
