@@ -15,10 +15,10 @@ templ WhereToPlayPage() {
                     hx-trigger="submit"
                     hx-target="#search-result"
                     hx-indicator="#spinner"
-                    class="bg-white p-4 rounded-lg shadow-md flex space-x-4 mb-0">
+                    class="bg-white p-4 rounded-lg shadow-md flex flex-col sm:flex-row sm:space-x-4 space-y-4 sm:space-y-0 mb-0">
                 <div class="flex-1">
                     <select id="sport" name="sport" required
-                        class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-md">
                         <option value="">Select a sport</option>
                         <option value="Football">Football</option>
                         <option value="Basketball">Basketball</option>
@@ -33,10 +33,12 @@ templ WhereToPlayPage() {
                         class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"/>
                     <input type="hidden" id="cityPlaceId" name="cityPlaceId" />
                 </div>
-                <button type="submit"
-                    class="relative bg-indigo-600 text-white px-4 py-2 rounded-md shadow hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-                    <span class="text-white">Search</span>
-                </button>
+                <div class="flex justify-center sm:flex-none">
+                    <button type="submit"
+                            class="relative bg-indigo-600 text-white px-4 py-2 rounded-md shadow hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                        <span class="text-white">Search</span>
+                    </button>
+                </div>
 
             </form>
             <div class="flex justify-end mt-1">
