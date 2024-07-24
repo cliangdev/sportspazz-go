@@ -83,7 +83,7 @@ func (p *PoiHandler) createPoi(w http.ResponseWriter, r *http.Request) {
 		poiRequest.Description,
 		poiRequest.Address,
 		poiRequest.CityId,
-		poiRequest.GooglePlaceId,
+		&poiRequest.GooglePlaceId,
 		poiRequest.Website,
 		poiRequest.SportType,
 		poiRequest.ThumbnailUrl,

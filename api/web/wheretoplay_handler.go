@@ -65,8 +65,8 @@ func (h *WhereToPlayHandler) placeDetails(w http.ResponseWriter, r *http.Request
 		}
 		return
 	}
-	if poi.GooglePlaceId != "" {
-		details, err := getGooglePlaceDetails(poi.GooglePlaceId, h.googleMapApiKey)
+	if poi.GooglePlaceId != nil {
+		details, err := getGooglePlaceDetails(*poi.GooglePlaceId, h.googleMapApiKey)
 		if err == nil && details.Status == "OK" {
 			w.WriteHeader(http.StatusOK)
 
@@ -185,7 +185,7 @@ func (h *WhereToPlayHandler) createNewPlace(w http.ResponseWriter, r *http.Reque
 		input.Description,
 		input.Address,
 		input.CityId,
-		"",
+		nil,
 		input.Website,
 		input.Sport,
 		thumbnailUrl,
