@@ -13,7 +13,7 @@ type Poi struct {
 	Address       string
 	Website       string
 	CityId        string
-	GooglePlaceId string
+	GooglePlaceId *string
 	SportType     string
 	ThumbnailUrl  string
 	Description   string

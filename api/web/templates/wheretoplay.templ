@@ -85,7 +85,7 @@ templ PoiCardComponent(poi poi.Poi, lastPoi bool, cursor string, sport, cityPlac
                         </a>
                     </p>
                     if poi.Website != "" {
-                    <p>
+                        <p>
                             <a href={ templ.SafeURL(poi.Website) }
                                 target="_blank"
                                 class="relative text-xs text-blue-400 hover:text-blue-800 group">
@@ -140,7 +140,7 @@ templ CreateNewPlace() {
             </div>
             <div class="mb-4">
                 <input type="text" id="website" name="website" placeholder="Website"
-                    class="border border-gray-300 rounded p-2 w-full" required/>
+                    class="border border-gray-300 rounded p-2 w-full"/>
             </div>
             <div class="mb-4">
                 <select id="sport" name="sport" class="border border-gray-300 rounded p-2 w-full" required>
@@ -173,25 +173,42 @@ templ CreateNewPlace() {
 
 templ addressAutoComplete() {
     <script>
-        function initAutocomplete() {
-            const addressInput = document.getElementById('address');
-            const placeIdInput = document.getElementById('cityPlaceId');
-            const autocomplete = new google.maps.places.Autocomplete(addressInput, {
-                types: ['(cities)'],
+        function initAddressAutoComplete() {
+            var autocomplete = new google.maps.places.Autocomplete((document.getElementById('address')), {
+                types: ['geocode']
             });
+        
+            google.maps.event.addListener(autocomplete, 'place_changed', function () {
+                var place = autocomplete.getPlace();
+                var city = null;
 
-            autocomplete.addListener('place_changed', () => {
-                const place = autocomplete.getPlace();
-                if (!place.place_id) {
-                    console.log("No place_id for the selected place.");
-                    return;
+                for (var i = 0; i < place.address_components.length; i++) {
+                    var component = place.address_components[i];
+                    if (component.types.includes('locality')) {
+                        city = component.long_name;
+                        break;
+                    }
                 }
 
-                placeIdInput.value = place.place_id;
+                if (city) {
+                    var cityPlaceIdInput = document.getElementById('cityPlaceId');
+                    var geocoder = new google.maps.Geocoder();
+
+                    geocoder.geocode({ 'address': city }, function(results, status) {
+                        if (status === google.maps.GeocoderStatus.OK) {
+                            for (var i = 0; i < results.length; i++) {
+                                if (results[i].types.includes('locality')) {
+                                    cityPlaceIdInput.value = results[i].place_id
+                                    break;
+                                }
+                            }
+                        }
+                    });
+                }
             });
         }
 
-        google.maps.event.addDomListener(window, 'load', initAutocomplete);
+        window.addEventListener('load', initAddressAutoComplete);
     </script>
 }
 
